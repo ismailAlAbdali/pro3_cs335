@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="newPrefix">
-    <file>icons/1860115.png</file>
-    <file>icons/eraser.png</file>
-    <file>icons/zoom_in.png</file>
-    <file>icons/zoom_out.png</file>
-  </qresource>
-</RCC>
