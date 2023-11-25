@@ -1,6 +1,4 @@
-# QT Image viewer
-# https://doc.qt.io/qt-5/qtwidgets-widgets-imageviewer-example.html
-# Classes to consider: QImageReader
+
 
 # Import necessary modules
 import os, sys
