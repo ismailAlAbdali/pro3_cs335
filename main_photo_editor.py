@@ -16,6 +16,9 @@ icon_path = "icons"
 # TODO:  paint event
 # TODO: handling pen and eraser and handling drawing in the image
 
+
+# image functionalities
+
 class imageLabel(QLabel):
     """Subclass of QLabel for displaying image"""
     def __init__(self, parent, image=None):
@@ -298,6 +301,8 @@ class imageLabel(QLabel):
         """Ensure the value stays within the specified range."""
         return max(min_val, min(value, max_val))
 
+
+    # this function still not working
     def changeContrast(self, contrast):
         """Change the contrast of the pixels in the image.
            Contrast is the difference between max and min pixel intensity."""
@@ -333,7 +338,7 @@ class imageLabel(QLabel):
 
         self.setPixmap(QPixmap().fromImage(self.image))
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event):   
         """Handle mouse press event."""
         self.origin = event.pos()
         if not(self.rubber_band):
@@ -352,6 +357,9 @@ class imageLabel(QLabel):
         """Handle when the mouse is released."""
         self.rubber_band.hide()
 
+
+
+## the Whole UI
 class PhotoEditorGUI(QMainWindow):
     
     def __init__(self):
