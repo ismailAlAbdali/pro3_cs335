@@ -5,8 +5,10 @@ from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubb
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
 
+
+# from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
 class EditorFunctions(QLabel):
-   
+    """Subclass of QLabel for displaying image"""
     def __init__(self, parent, image=None):
         super().__init__(parent)
         self.parent = parent 
@@ -24,7 +26,7 @@ class EditorFunctions(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def openImage(self):
-    
+        """Load a new image into the """
         image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", 
                 "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
                 GIF Files (*.gif)")
@@ -43,10 +45,10 @@ class EditorFunctions(QLabel):
             pass
         else:
             QMessageBox.information(self, "Error", 
-                "Unable to open image.", QMessageBox.standardButton.Ok)
+                "Unable to open image.", QMessageBox.StandardButton.Ok)
     
     def saveImage(self):
-       
+        """Save the image displayed in the label."""
         if self.image.isNull() == False:
             image_file, _ = QFileDialog.getSaveFileName(self, "Save Image", 
                 "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
@@ -56,13 +58,13 @@ class EditorFunctions(QLabel):
                 self.image.save(image_file)
             else:
                 QMessageBox.information(self, "Error", 
-                    "Unable to save image.", QMessageBox.standardButton.Ok)
+                    "Unable to save image.", QMessageBox.StandardButton.Ok)
         else:
             QMessageBox.information(self, "Empty Image", 
-                    "There is no image to save.", QMessageBox.standardButton.Ok)
+                    "There is no image to save.", QMessageBox.StandardButton.Ok)
 
     def revertToOriginal(self):
-       
+        """Revert the image back to original image."""
         if self.image.isNull() == False:
             self.image = self.original_image
             self.setPixmap(QPixmap().fromImage(self.image))
@@ -72,7 +74,7 @@ class EditorFunctions(QLabel):
 
 
     def rotateImage90(self, direction):
-        
+        """Rotate image 90º clockwise or counterclockwise."""
         if self.image.isNull() == False:
             if direction == "cw":
                 transform90 = QTransform().rotate(90)
@@ -94,7 +96,9 @@ class EditorFunctions(QLabel):
             pass
 
     def flipImage(self, axis):
-        
+        """
+        Mirror the image across the horizontal axis.
+        """
         if self.image.isNull() == False:
             if axis == "horizontal":
                 flip_h = QTransform().scale(-1, 1)
@@ -113,8 +117,8 @@ class EditorFunctions(QLabel):
             # No image to flip
             pass
 
-   
-    # Image blurring
+    ## make image blurring
+
     def blurImageOpenCV(self, blur_strength):
         if not self.image.isNull():
             # Ensure the image is in a format that uses 4 bytes per pixel
@@ -140,10 +144,10 @@ class EditorFunctions(QLabel):
             self.repaint()
 
         else:
-            QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.standardButton.Ok)
+            QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.StandardButton.Ok)
 
     # grayscale image trasformation
-    def convertBlackWhite(self):
+    def blackAndWhite_trans(self):
         if self.image.isNull() == False:
             temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale16)
             self.image = QImage(temp_converted_img)
@@ -168,19 +172,20 @@ class EditorFunctions(QLabel):
             self.repaint()
 
     def mousePressEvent(self, event):   
-    
+        """Handle mouse press event."""
         self.origin = event.pos()
         if not(self.rubber_band):
             self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
         self.rubber_band.setGeometry(QRect(self.origin, QSize()))
         self.rubber_band.show()
 
+        #print(self.rubber_band.height())
         print(self.rubber_band.x())
 
     def mouseMoveEvent(self, event):
-        
+        """Handle mouse move event."""
         self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
 
     def mouseReleaseEvent(self, event):
-
+        """Handle when the mouse is released."""
         self.rubber_band.hide()

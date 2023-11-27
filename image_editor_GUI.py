@@ -47,7 +47,7 @@ class PhotoEditorGUI(QMainWindow):
         self.open_act = QAction(QIcon("./icons/open.png"),'Open...', self)
         self.open_act.triggered.connect(self.image_canvas.openImage)
 
-        self.save_act = QAction(QIcon("./icons./save.png"), "Save...", self)
+        self.save_act = QAction(QIcon("./icons/save.png"), "Save...", self)
         self.save_act.triggered.connect(self.image_canvas.saveImage)
         self.save_act.setEnabled(True)
 
@@ -83,17 +83,25 @@ class PhotoEditorGUI(QMainWindow):
 
         # Filter actions
         self.blur_act  = QAction(QIcon("./icons/blur.png"),"Blurring",self)
-        self.blur_act.triggered.connect(lambda: self.image_canvas.blurImageOpenCV(radius=1))
+        self.blur_act.triggered.connect(lambda: self.applyBlur())
         self.blur_act.setEnabled(True) # disable until finishing the funcationlity
         
         self.convert_blackwhite_act = QAction(QIcon("./icons/grayscale.png"),"Black and White",self)
-        self.convert_blackwhite_act.triggered.connect(lambda: self.image_canvas.convertBlackWhite())
+        self.convert_blackwhite_act.triggered.connect(lambda: self.image_canvas.blackAndWhite_trans())
 
         self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
         self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
 
+        tool_bar.addActions([self.open_act,self.save_act])
+        tool_bar.addSeparator()
         tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, self.pixelation_act])
 
+
+    def applyBlur(self):
+        blur_strength, ok_pressed = QInputDialog.getInt(self, "Set Blur Strength", 
+                                                        "Strength:", 5, 1, 50, 1)
+        if ok_pressed:
+            self.image_canvas.blurImageOpenCV(blur_strength) 
 
     def apply_pixelation(self):
         pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
