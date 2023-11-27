@@ -1,12 +1,12 @@
 # Import necessary modules
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar, QScrollArea)
+from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar, QInputDialog, QScrollArea)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QImage, QPalette, QAction
 import image_editor_functions as img
 
 ## the Whole UI
-class ImageLabGUI(QMainWindow):
+class PhotoEditorGUI(QMainWindow):
     
     def __init__(self):
         super().__init__()
@@ -16,7 +16,6 @@ class ImageLabGUI(QMainWindow):
         self.image = QImage()
 
     def initUI(self):
-
         self.setMinimumSize(500, 500)
         self.setWindowTitle("Image Lab")
         self.showMaximized()
@@ -28,7 +27,7 @@ class ImageLabGUI(QMainWindow):
         self.show()
 
     def createImageCanvas(self):
-       
+    
         self.image_canvas = img.EditorFunctions(self)
         self.image_canvas.resize(self.image_canvas.pixmap().size())
 
@@ -39,47 +38,76 @@ class ImageLabGUI(QMainWindow):
         self.scroll_area.setWidget(self.image_canvas)
         self.setCentralWidget(self.scroll_area)
 
-
     def createMenuBar(self):
+        
+         # Create menubar
+        menu_bar = self.menuBar()
+        
+        # Actions for File menu
+        self.open_act = QAction(QIcon("./icons/open.png"),'Open...', self)
+        self.open_act.triggered.connect(self.image_canvas.openImage)
 
-        menu = self.menuBar()
-        file_menu = menu.addMenu("File")
+        self.save_act = QAction(QIcon("./icons./save.png"), "Save...", self)
+        self.save_act.triggered.connect(self.image_canvas.saveImage)
+        self.save_act.setEnabled(True)
 
-        # Create actions for menu bar
-        self.open_action = QAction(QIcon("./icons/open.png"),'Open...', self)
-        self.open_action.triggered.connect(self.image_canvas.openImage)
 
-        self.save_action = QAction(QIcon("./icons/save.png"), "Save...", self)
-        self.save_action.triggered.connect(self.image_canvas.saveImage)
-        self.save_action.setEnabled(False)
+        # Create file menu and add actions
+        file_menu = menu_bar.addMenu('File')
+        file_menu.addAction(self.open_act)
+        file_menu.addAction(self.save_act)
+        
+        file_menu.addActions([self.open_act, self.save_act])
 
-        file_menu.addActions([self.open_action, self.save_action])
 
     def createToolBar(self):
-        
-        tool_bar = QToolBar("Toolbar")
-        tool_bar.setIconSize(QSize(40, 40))
+        """Set up the toolbar."""
+        tool_bar = QToolBar("Main Toolbar")
+        tool_bar.setIconSize(QSize(26, 26))
         self.addToolBar(tool_bar)
 
-        self.rotate90_cw_act = QAction(QIcon("./icons/rotate90_cw.png"),'Rotate Right', self)
+        # Revert action
+        self.revert_act = QAction("Revert to Original", self)
+        self.revert_act.triggered.connect(lambda: self.image_canvas.revertToOriginal())
+        self.revert_act.setEnabled(True)
+
+        # Transformation actions
+        self.rotate90_cw_act = QAction(QIcon("./icons/rotate90_cw.png"),'Rotate 90º CW', self)
         self.rotate90_cw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("cw"))
 
-        self.rotate90_ccw_act = QAction(QIcon("./icons/rotate90_ccw.png"),'Rotate Left', self)
+        self.rotate90_ccw_act = QAction(QIcon("./icons/rotate90_ccw.png"),'Rotate 90º CCW', self)
         self.rotate90_ccw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
-
         self.flip_vertical = QAction(QIcon("./icons/flip_vertical.png"), 'Flip Vertical', self)
-        self.flip_vertical.triggered.connect(lambda: self.image_canvas.flipImage('vertical'))
+        self.flip_vertical.triggered.connect(lambda: self.image_canvas.flipImage('horizontal'))
 
-        tool_bar.addActions([self.rotate90_ccw_act,self.rotate90_cw_act, self.flip_vertical])
+        # Filter actions
+        self.blur_act  = QAction(QIcon("./icons/blur.png"),"Blurring",self)
+        self.blur_act.triggered.connect(lambda: self.image_canvas.blurImageOpenCV(radius=1))
+        self.blur_act.setEnabled(True) # disable until finishing the funcationlity
+        
+        self.convert_blackwhite_act = QAction(QIcon("./icons/grayscale.png"),"Black and White",self)
+        self.convert_blackwhite_act.triggered.connect(lambda: self.image_canvas.convertBlackWhite())
 
+        self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
+        self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
+
+        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, self.pixelation_act])
+
+
+    def apply_pixelation(self):
+        pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
+                                                     "Pixel Size:", 10, 1, 100, 1)
+        if ok_pressed:
+            self.image_canvas.pixelateImage(pixel_size)
+
+# handling esacape key: and f1 key
     def keyPressEvent(self, event):
-
+        """Handle key press events."""
         if event.key() == Qt.Key.Key_Escape:
             self.close()
 
 if __name__ == "__main__":
-    
     app = QApplication(sys.argv)
-    window = ImageLabGUI()
+    window = PhotoEditorGUI()
     sys.exit(app.exec())
