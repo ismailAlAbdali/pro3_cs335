@@ -1,3 +1,6 @@
+import cv2 
+import numpy as np
+
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
