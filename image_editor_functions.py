@@ -3,7 +3,7 @@ import numpy as np
 
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
 from PyQt6.QtCore import Qt, QSize, QRect
-from PyQt6.QtGui import QPixmap, QImage, QTransform
+from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 
 
 # from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
@@ -21,6 +21,9 @@ class EditorFunctions(QLabel):
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.setScaledContents(True)
 
+        self.painting = False
+        self.paintMode = 1
+        self.black = QColor("black")
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -174,10 +177,17 @@ class EditorFunctions(QLabel):
     def mousePressEvent(self, event):   
         """Handle mouse press event."""
         self.origin = event.pos()
-        if not(self.rubber_band):
-            self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
-        self.rubber_band.setGeometry(QRect(self.origin, QSize()))
-        self.rubber_band.show()
+        if self.paintMode == 0:
+            if not(self.rubber_band):
+                self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
+            self.rubber_band.setGeometry(QRect(self.origin, QSize()))
+            self.rubber_band.show()
+        elif self.paintMode == 1:
+            self.painting = True
+            print(f"origin {self.origin.x()}, {self.origin.y()}")
+            self.paintPixels(self.origin)
+
+
 
         #print(self.rubber_band.height())
         print(self.rubber_band.x())
@@ -185,7 +195,16 @@ class EditorFunctions(QLabel):
     def mouseMoveEvent(self, event):
         """Handle mouse move event."""
         self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
+        if self.painting==True:
+            self.paintPixels(event.pos())
 
     def mouseReleaseEvent(self, event):
         """Handle when the mouse is released."""
         self.rubber_band.hide()
+
+    def paintPixels(self,origin,brush_size=3):
+        for i in range(brush_size):
+            for j in range(brush_size):
+                self.image.setPixelColor(origin.x()+i, origin.y()+j, self.black)
+        self.setPixmap(QPixmap.fromImage(self.image))
+        self.repaint()
