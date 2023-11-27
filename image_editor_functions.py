@@ -27,15 +27,6 @@ class ImageLabel(QLabel):
                 GIF Files (*.gif)")
         
         if image_file:
-            # Reset values when opening an image
-            self.parent.zoom_factor = 1
-            #self.parent.scroll_area.setVisible(True)
-            self.parent.print_act.setEnabled(True)
-            self.parent.updateActions()
-
-            # Reset all sliders
-            self.parent.brightness_slider.setValue(0)
-
             # Get image format
             self.image = QImage(image_file)
             self.original_image = self.image.copy()
@@ -73,34 +64,6 @@ class ImageLabel(QLabel):
         self.setPixmap(QPixmap().fromImage(self.image))
         self.repaint()
 
-
-    def resizeImage(self):
-        """Resize image."""
-        if self.image.isNull() == False:
-            resize = QTransform().scale(0.5, 0.5)
-
-            pixmap = QPixmap(self.image)
-
-            resized_image = pixmap.transformed(resize, mode=Qt.TransformationMode.SmoothTransformation)
-
-            self.image = QImage(resized_image) 
-            self.setPixmap(resized_image)
-            
-            self.setScaledContents(True)
-            self.repaint() # repaint the child widget
-        else:
-            # No image to rotate
-            pass
-
-    def cropImage(self):
-        """Crop selected portions in the image."""
-        if self.image.isNull() == False:
-            rect = QRect(10, 20, 400, 200)
-            original_image = self.image
-            cropped = original_image.copy(rect)
-
-            self.image = QImage(cropped)
-            self.setPixmap(QPixmap().fromImage(cropped))
 
     def rotateImage90(self, direction):
         """Rotate image 90º clockwise or counterclockwise."""
@@ -145,24 +108,6 @@ class ImageLabel(QLabel):
         else:
             # No image to flip
             pass
-
-    def convertToGray(self):
-        """Convert image to grayscale."""
-        if self.image.isNull() == False:
-            converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale16)
-            
-            self.image = QImage(converted_img)
-            self.setPixmap(QPixmap().fromImage(converted_img))
-            self.repaint()
-
-    def convertToRGB(self):
-        """Convert image to RGB format."""
-        if self.image.isNull() == False:
-            converted_img = self.image.convertToFormat(QImage.Format.Format_RGB16)
-           
-            self.image = QImage(converted_img)
-            self.setPixmap(QPixmap().fromImage(converted_img))
-            self.repaint()
    
 
     def mousePressEvent(self, event):   
