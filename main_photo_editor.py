@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
     QScrollArea)
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QIcon, QImage, QPalette, QAction
+
 import image_editor_functions as img
 
 icon_path = "./icons"
@@ -48,8 +49,8 @@ class PhotoEditorGUI(QMainWindow):
 
         # Actions for Edit menu
         self.revert_act = QAction("Revert to Original", self)
-        self.revert_act.triggered.connect(self.image_label.revertToOriginal)
-        self.revert_act.setEnabled(False)
+        self.revert_act.triggered.connect(lambda: self.image_label.revertToOriginal())
+        self.revert_act.setEnabled(True)
 
 
         self.rotate90_cw_act = QAction(QIcon(os.path.join(icon_path, "rotate90_cw.png")),'Rotate 90º CW', self)
@@ -61,7 +62,16 @@ class PhotoEditorGUI(QMainWindow):
 
         self.flip_vertical = QAction(QIcon(os.path.join(icon_path, "flip_vertical.png")), 'Flip Vertical', self)
         self.flip_vertical.triggered.connect(lambda: self.image_label.flipImage('vertical'))
+
+        # filteration
+
+        self.blur_act  = QAction(QIcon(os.path.join(icon_path,"blur.png")),"Blurring",self)
+        self.blur_act.triggered.connect(lambda: self.image_label.blurImage(radius=1))
+        self.blur_act.setEnabled(False) # disable until finishing the funcationlity
         
+        self.convert_grayscale_act = QAction(QIcon(os.path.join(icon_path,"grayscale.png")),"Black and White",self)
+        self.convert_grayscale_act.triggered.connect(lambda: self.image_label.convertGrayscale())
+
 
         # Create menubar
         menu_bar = self.menuBar()
@@ -84,6 +94,12 @@ class PhotoEditorGUI(QMainWindow):
         tool_menu.addAction(self.rotate90_cw_act)
         tool_menu.addAction(self.rotate90_ccw_act)
         tool_menu.addAction(self.flip_vertical)
+        tool_menu.addSeparator()
+        tool_menu.addAction(self.revert_act)
+
+        trans_menu = menu_bar.addMenu("Tranformations")
+        trans_menu.addAction(self.blur_act)
+        trans_menu.addAction(self.convert_grayscale_act)
 
 
     def createToolBar(self):

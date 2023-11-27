@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubb
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
 
+# from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
 class ImageLabel(QLabel):
     """Subclass of QLabel for displaying image"""
     def __init__(self, parent, image=None):
@@ -60,9 +61,12 @@ class ImageLabel(QLabel):
 
     def revertToOriginal(self):
         """Revert the image back to original image."""
-        self.image = self.original_image
-        self.setPixmap(QPixmap().fromImage(self.image))
-        self.repaint()
+        if self.image.isNull() == False:
+            self.image = self.original_image
+            self.setPixmap(QPixmap().fromImage(self.image))
+            self.repaint()
+        else:
+            pass
 
 
     def rotateImage90(self, direction):
@@ -108,7 +112,24 @@ class ImageLabel(QLabel):
         else:
             # No image to flip
             pass
-   
+
+    ## make image blurring
+
+    def blurImage(self, radius):
+        """Apply a blur effect to the image."""
+        pass
+
+        # else:
+        #     QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.standardButton.Ok)
+
+    # grayscale image trasformation
+    def convertGrayscale(self):
+        if self.image.isNull() == False:
+            temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale16)
+            self.image = QImage(temp_converted_img)
+            self.setPixmap(QPixmap().fromImage(temp_converted_img))
+            self.repaint()
+
 
     def mousePressEvent(self, event):   
         """Handle mouse press event."""
