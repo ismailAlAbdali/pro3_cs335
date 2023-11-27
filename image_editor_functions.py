@@ -143,8 +143,8 @@ class ImageLabel(QLabel):
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
-        # else:
-        #     QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.standardButton.Ok)
+        else:
+            QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.standardButton.Ok)
 
     # grayscale image trasformation
     def convertGrayscale(self):
