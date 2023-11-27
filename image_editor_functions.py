@@ -2,8 +2,8 @@ from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubb
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
 
-class ImageLabel(QLabel):
-    """Subclass of QLabel for displaying image"""
+class EditorFunctions(QLabel):
+    
     def __init__(self, parent, image=None):
         super().__init__(parent)
         self.parent = parent 
@@ -21,7 +21,7 @@ class ImageLabel(QLabel):
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def openImage(self):
-        """Load a new image into the """
+        
         image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", 
                 "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
                 GIF Files (*.gif)")
@@ -43,7 +43,7 @@ class ImageLabel(QLabel):
                 "Unable to open image.", QMessageBox.standardButton.Ok)
     
     def saveImage(self):
-        """Save the image displayed in the label."""
+        
         if self.image.isNull() == False:
             image_file, _ = QFileDialog.getSaveFileName(self, "Save Image", 
                 "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
@@ -59,14 +59,14 @@ class ImageLabel(QLabel):
                     "There is no image to save.", QMessageBox.standardButton.Ok)
 
     def revertToOriginal(self):
-        """Revert the image back to original image."""
+        
         self.image = self.original_image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.repaint()
 
 
     def rotateImage90(self, direction):
-        """Rotate image 90º clockwise or counterclockwise."""
+        
         if self.image.isNull() == False:
             if direction == "cw":
                 transform90 = QTransform().rotate(90)
@@ -109,7 +109,6 @@ class ImageLabel(QLabel):
             # No image to flip
             pass
    
-
     def mousePressEvent(self, event):   
         """Handle mouse press event."""
         self.origin = event.pos()
@@ -117,8 +116,7 @@ class ImageLabel(QLabel):
             self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
         self.rubber_band.setGeometry(QRect(self.origin, QSize()))
         self.rubber_band.show()
-
-        #print(self.rubber_band.height())
+        
         print(self.rubber_band.x())
 
     def mouseMoveEvent(self, event):
