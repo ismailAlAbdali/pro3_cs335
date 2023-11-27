@@ -1,6 +1,10 @@
+import cv2 
+import numpy as np
+
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
+
 
 # from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
 class ImageLabel(QLabel):
@@ -115,9 +119,29 @@ class ImageLabel(QLabel):
 
     ## make image blurring
 
-    def blurImage(self, radius):
-        """Apply a blur effect to the image."""
-        pass
+    def blurImageOpenCV(self, blur_strength):
+        if not self.image.isNull():
+            # Ensure the image is in a format that uses 4 bytes per pixel
+            image_format = QImage.Format.Format_ARGB32
+            converted_image = self.image.convertToFormat(image_format)
+
+            # Convert QImage to OpenCV format
+            width = converted_image.width()
+            height = converted_image.height()
+            ptr = converted_image.bits()
+            ptr.setsize(converted_image.sizeInBytes())
+            arr = np.array(ptr).reshape((height, width, 4))
+
+            # Apply blur using OpenCV
+            # Ensure blur_strength is odd
+            blur_strength = blur_strength if blur_strength % 2 == 1 else blur_strength + 1
+            blurred = cv2.GaussianBlur(arr, (blur_strength, blur_strength), 0)
+
+            # Convert back to QImage
+            blurred_image = QImage(blurred.data, blurred.shape[1], blurred.shape[0], image_format)
+            self.image = blurred_image
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
 
         # else:
         #     QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.standardButton.Ok)
