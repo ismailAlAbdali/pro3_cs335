@@ -130,6 +130,22 @@ class ImageLabel(QLabel):
             self.setPixmap(QPixmap().fromImage(temp_converted_img))
             self.repaint()
 
+    # adding pixelation
+    def pixelateImage(self, pixel_size):
+        if not self.image.isNull() and pixel_size > 0:
+            original_size = self.image.size()
+            # Scale down the image to create the pixelated effect
+            small = self.image.scaled(original_size.width() // pixel_size,
+                                      original_size.height() // pixel_size,
+                                      Qt.AspectRatioMode.IgnoreAspectRatio,
+                                      Qt.TransformationMode.FastTransformation)
+            # Scale it back up to its original size
+            pixelated = small.scaled(original_size,
+                                     Qt.AspectRatioMode.IgnoreAspectRatio,
+                                     Qt.TransformationMode.FastTransformation)
+            self.image = pixelated
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
 
     def mousePressEvent(self, event):   
         """Handle mouse press event."""

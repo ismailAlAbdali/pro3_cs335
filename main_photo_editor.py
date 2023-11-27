@@ -72,6 +72,9 @@ class PhotoEditorGUI(QMainWindow):
         self.convert_grayscale_act = QAction(QIcon(os.path.join(icon_path,"grayscale.png")),"Black and White",self)
         self.convert_grayscale_act.triggered.connect(lambda: self.image_label.convertGrayscale())
 
+        self.pixelation_act = QAction(QIcon(os.path.join(icon_path,"pixel.png")),"Pixelate",self)
+        self.pixelation_act.triggered.connect(lambda: self.image_label.pixelateImage(pixel_size=2))
+        self.blur_act.setEnabled(True)
 
         # Create menubar
         menu_bar = self.menuBar()
@@ -100,6 +103,7 @@ class PhotoEditorGUI(QMainWindow):
         trans_menu = menu_bar.addMenu("Tranformations")
         trans_menu.addAction(self.blur_act)
         trans_menu.addAction(self.convert_grayscale_act)
+        trans_menu.addAction(self.pixelation_act)
 
 
     def createToolBar(self):
