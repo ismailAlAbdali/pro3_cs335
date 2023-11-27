@@ -1,7 +1,7 @@
 # Import necessary modules
 import os, sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel,
-    QToolButton, QToolBar, QDockWidget, QGridLayout, 
+    QToolButton, QToolBar, QDockWidget, QGridLayout, QInputDialog,
     QScrollArea)
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QIcon, QImage, QPalette, QAction
@@ -45,7 +45,7 @@ class PhotoEditorGUI(QMainWindow):
 
         self.save_act = QAction(QIcon(os.path.join(icon_path, "save.png")), "Save...", self)
         self.save_act.triggered.connect(self.image_label.saveImage)
-        self.save_act.setEnabled(False)
+        self.save_act.setEnabled(True)
 
         # Actions for Edit menu
         self.revert_act = QAction("Revert to Original", self)
@@ -73,7 +73,7 @@ class PhotoEditorGUI(QMainWindow):
         self.convert_grayscale_act.triggered.connect(lambda: self.image_label.convertGrayscale())
 
         self.pixelation_act = QAction(QIcon(os.path.join(icon_path,"pixel.png")),"Pixelate",self)
-        self.pixelation_act.triggered.connect(lambda: self.image_label.pixelateImage(pixel_size=2))
+        self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
         self.blur_act.setEnabled(True)
 
         # Create menubar
@@ -143,6 +143,11 @@ class PhotoEditorGUI(QMainWindow):
         self.save_act.setEnabled(True)
         self.revert_act.setEnabled(True)
 
+    def apply_pixelation(self):
+        pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
+                                                     "Pixel Size:", 10, 1, 100, 1)
+        if ok_pressed:
+            self.image_label.pixelateImage(pixel_size)
 
 # handling esacape key: and f1 key
     def keyPressEvent(self, event):
