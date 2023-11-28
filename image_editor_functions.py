@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
-from PyQt6.QtCore import Qt, QSize, QRect
+from PyQt6.QtCore import Qt, QSize, QRect, QPoint
 from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 
 
@@ -20,10 +20,9 @@ class EditorFunctions(QLabel):
 
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.setScaledContents(True)
-
-        self.painting = False
-        self.paintMode = 1
-        self.black = QColor("black")
+        
+        self.paintMode = False # if true, draw pen on image instead of rubber_band
+        self.prevPaintLoc = None
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -182,9 +181,7 @@ class EditorFunctions(QLabel):
                 self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
             self.rubber_band.setGeometry(QRect(self.origin, QSize()))
             self.rubber_band.show()
-        elif self.paintMode == 1:
-            self.painting = True
-            print(f"origin {self.origin.x()}, {self.origin.y()}")
+        elif self.paintMode:
             self.paintPixels(self.origin)
 
 
@@ -195,16 +192,36 @@ class EditorFunctions(QLabel):
     def mouseMoveEvent(self, event):
         """Handle mouse move event."""
         self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
-        if self.painting==True:
+        if self.paintMode:
             self.paintPixels(event.pos())
 
     def mouseReleaseEvent(self, event):
         """Handle when the mouse is released."""
         self.rubber_band.hide()
+        self.prevPaintLoc = None
 
-    def paintPixels(self,origin,brush_size=3):
-        for i in range(brush_size):
-            for j in range(brush_size):
-                self.image.setPixelColor(origin.x()+i, origin.y()+j, self.black)
+    def paintPixels(self,origin,brush_size=3,color=QColor("black")):
+        pixelsToPaint = set()
+        #paint around origin in radius of brush_size around center
+        for x in range(brush_size):
+            for y in range(brush_size):
+                pixelsToPaint.add(QPoint(origin.x() + x, origin.y() + y))
+        if self.prevPaintLoc != None and self.prevPaintLoc != origin:
+            line_x = origin.x() - self.prevPaintLoc.x()
+            line_y = origin.y() - self.prevPaintLoc.y()
+            distance = (line_x**2 + line_y**2) ** (1/2)
+            step_x = line_x/distance
+            step_y = line_y/distance
+            for i in range(int(round(distance))):
+                for x in range(brush_size):
+                    for y in range(brush_size):
+                        pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
+        for point in pixelsToPaint:
+            self.image.setPixelColor(point,color)
+        self.prevPaintLoc = origin
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
+
+    def togglePaintbrush(self):
+        self.paintMode = not self.paintMode
+        self.prevPaintLoc
