@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
-from PyQt6.QtCore import Qt, QSize, QRect
-from PyQt6.QtGui import QPixmap, QImage, QTransform
+from PyQt6.QtCore import Qt, QSize, QRect, QPoint
+from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
+from statistics import median
 
 
 # from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
@@ -20,7 +21,9 @@ class EditorFunctions(QLabel):
 
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.setScaledContents(True)
-
+        
+        self.paintMode = False # if true, draw pen on image instead of rubber_band
+        self.prevPaintLoc = None
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -171,13 +174,58 @@ class EditorFunctions(QLabel):
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
+    #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
+    def adjustContrast(self,contrast_level):
+        if not self.image.isNull():
+            contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
+            for i in range(self.image.width()):
+                for j in range(self.image.height()):
+                    newColor = self.image.pixelColor(i,j)
+                    newColor.setRed(int(round(median([0,(contrastFactor*(newColor.red() -128) + 128),255]),0)))
+                    newColor.setBlue(int(round(median([0,(contrastFactor*(newColor.blue() -128) + 128),255]),0)))
+                    newColor.setGreen(int(round(median([0,(contrastFactor*(newColor.green() -128) + 128),255]),0)))
+                    self.image.setPixelColor(i,j,newColor)
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
+
+    def paintPixels(self,origin,brush_size=3,color=QColor("black")):
+        #store all pixels in set, then paint them to ensure no duplicates
+        pixelsToPaint = set()
+        #paint around origin in radius of brush_size
+        for x in range(brush_size):
+            for y in range(brush_size):
+                pixelsToPaint.add(QPoint(origin.x() + x, origin.y() + y))
+        #when mouse is held, draw a line between a point and the previous point from last call to function
+        if self.prevPaintLoc != None and self.prevPaintLoc != origin:
+            line_x = origin.x() - self.prevPaintLoc.x()
+            line_y = origin.y() - self.prevPaintLoc.y()
+            distance = (line_x**2 + line_y**2) ** (1/2)
+            step_x = line_x/distance
+            step_y = line_y/distance
+            for i in range(int(round(distance))):
+                for x in range(brush_size):
+                    for y in range(brush_size):
+                        pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
+        for point in pixelsToPaint:
+            self.image.setPixelColor(point,color)
+        self.prevPaintLoc = origin
+        self.setPixmap(QPixmap.fromImage(self.image))
+        self.repaint()
+
+    def togglePaintbrush(self):
+        self.paintMode = not self.paintMode
+        self.prevPaintLoc = None
+
     def mousePressEvent(self, event):   
         """Handle mouse press event."""
         self.origin = event.pos()
-        if not(self.rubber_band):
-            self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
-        self.rubber_band.setGeometry(QRect(self.origin, QSize()))
-        self.rubber_band.show()
+        if not self.paintMode:
+            if not(self.rubber_band):
+                self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
+            self.rubber_band.setGeometry(QRect(self.origin, QSize()))
+            self.rubber_band.show()
+        elif self.paintMode:
+            self.paintPixels(self.origin)
 
         #print(self.rubber_band.height())
         print(self.rubber_band.x())
@@ -185,7 +233,10 @@ class EditorFunctions(QLabel):
     def mouseMoveEvent(self, event):
         """Handle mouse move event."""
         self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
+        if self.paintMode:
+            self.paintPixels(event.pos())
 
     def mouseReleaseEvent(self, event):
         """Handle when the mouse is released."""
         self.rubber_band.hide()
+        self.prevPaintLoc = None
