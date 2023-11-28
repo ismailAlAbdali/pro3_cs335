@@ -1,4 +1,3 @@
-# Import necessary modules
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar, QInputDialog, QScrollArea)
 from PyQt6.QtCore import Qt, QSize
@@ -79,7 +78,11 @@ class PhotoEditorGUI(QMainWindow):
         self.rotate90_ccw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
         self.flip_vertical = QAction(QIcon("./icons/flip_vertical.png"), 'Flip Vertical', self)
-        self.flip_vertical.triggered.connect(lambda: self.image_canvas.flipImage('horizontal'))
+        self.flip_vertical.triggered.connect(lambda: self.image_canvas.flipImage('vertical'))
+
+        self.flip_horizontal = QAction(QIcon("./icons/flip_horizontal.png"), 'Flip Horizontal', self)
+        self.flip_horizontal.triggered.connect(lambda: self.image_canvas.flipImage('horizontal'))
+
 
         # Filter actions
         self.blur_act  = QAction(QIcon("./icons/blur.png"),"Blurring",self)
@@ -92,9 +95,13 @@ class PhotoEditorGUI(QMainWindow):
         self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
         self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
 
+        self.sketch_act = QAction(QIcon("./icons/edit.png"),"Sketch",self)
+        self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
+
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, self.pixelation_act])
+        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, 
+                             self.flip_horizontal, self.blur_act, self.convert_blackwhite_act, self.pixelation_act, self.sketch_act])
 
 
     def applyBlur(self):
