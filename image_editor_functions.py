@@ -97,20 +97,20 @@ class EditorFunctions(QLabel):
             # No image to rotate
             pass
 
-    def flipImage(self, axis):
+    def mirrorImage(self, axis):
         
         if self.image.isNull() == False:
             if axis == "horizontal":
-                flip_h = QTransform().scale(-1, 1)
+                mirror_horizontal = QTransform().scale(-1, 1)
                 pixmap = QPixmap(self.image)
-                flipped = pixmap.transformed(flip_h)
+                mirrored = pixmap.transformed(mirror_horizontal)
             elif axis == "vertical":
-                flip_v = QTransform().scale(1, -1)
+                mirror_vertical = QTransform().scale(1, -1)
                 pixmap = QPixmap(self.image)
-                flipped = pixmap.transformed(flip_v)
+                mirrored = pixmap.transformed(mirror_vertical)
 
-            self.image = QImage(flipped)
-            self.setPixmap(flipped)
+            self.image = QImage(mirrored)
+            self.setPixmap(mirrored)
             
             self.repaint()
         else:

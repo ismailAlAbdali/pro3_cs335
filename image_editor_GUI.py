@@ -78,10 +78,10 @@ class PhotoEditorGUI(QMainWindow):
         self.rotate90_ccw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
         self.flip_vertical = QAction(QIcon("./icons/flip_vertical.png"), 'Flip Vertical', self)
-        self.flip_vertical.triggered.connect(lambda: self.image_canvas.flipImage('vertical'))
+        self.flip_vertical.triggered.connect(lambda: self.image_canvas.mirrorImage('vertical'))
 
         self.flip_horizontal = QAction(QIcon("./icons/flip_horizontal.png"), 'Flip Horizontal', self)
-        self.flip_horizontal.triggered.connect(lambda: self.image_canvas.flipImage('horizontal'))
+        self.flip_horizontal.triggered.connect(lambda: self.image_canvas.mirrorImage('horizontal'))
 
 
         # Filter actions
