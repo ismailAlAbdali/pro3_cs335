@@ -95,13 +95,16 @@ class PhotoEditorGUI(QMainWindow):
         self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
         self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
 
-        self.sketch_act = QAction(QIcon("./icons/edit.png"),"Sketch",self)
-        self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
+        self.contrast_act = QAction(QIcon("./icons/contrast.png"),"Contrast",self)
+        self.contrast_act.triggered.connect(lambda: self.apply_contrast())
 
+        self.paintbrush_act = QAction("Toggle Paintbrush",self)
+        self.paintbrush_act.triggered.connect(lambda: self.image_canvas.togglePaintbrush())
+        
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, 
-                             self.flip_horizontal, self.blur_act, self.convert_blackwhite_act, self.pixelation_act, self.sketch_act])
+        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, 
+                             self.pixelation_act, self.contrast_act, self.paintbrush_act])
 
 
     def applyBlur(self):
@@ -115,6 +118,12 @@ class PhotoEditorGUI(QMainWindow):
                                                      "Pixel Size:", 10, 1, 100, 1)
         if ok_pressed:
             self.image_canvas.pixelateImage(pixel_size)
+
+    def apply_contrast(self):
+        contrast_level, ok_pressed = QInputDialog.getInt(self, "Adjust Contrast",
+                                                         "Contrast Level:", 0, -255, 255, 1)
+        if ok_pressed:
+            self.image_canvas.adjustContrast(contrast_level)
 
 # handling esacape key: and f1 key
     def keyPressEvent(self, event):
