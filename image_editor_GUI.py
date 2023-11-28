@@ -66,7 +66,7 @@ class PhotoEditorGUI(QMainWindow):
         self.addToolBar(tool_bar)
 
         # Revert action
-        self.revert_act = QAction("Revert to Original", self)
+        self.revert_act = QAction(QIcon("./icons/revert.png"),"Revert to Original", self)
         self.revert_act.triggered.connect(lambda: self.image_canvas.revertToOriginal())
         self.revert_act.setEnabled(True)
 
@@ -98,13 +98,16 @@ class PhotoEditorGUI(QMainWindow):
         self.contrast_act = QAction(QIcon("./icons/contrast.png"),"Contrast",self)
         self.contrast_act.triggered.connect(lambda: self.apply_contrast())
 
-        self.paintbrush_act = QAction("Toggle Paintbrush",self)
+        self.paintbrush_act = QAction(QIcon("./icons/brush.png"),"Toggle Paintbrush",self)
         self.paintbrush_act.triggered.connect(lambda: self.image_canvas.togglePaintbrush())
         
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, 
-                             self.pixelation_act, self.contrast_act, self.paintbrush_act])
+        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical,self.convert_blackwhite_act])
+        tool_bar.addSeparator()
+        tool_bar.addActions([self.blur_act,  self.pixelation_act, self.contrast_act])
+        tool_bar.addSeparator()
+        tool_bar.addActions([self.paintbrush_act])
 
 
     def applyBlur(self):
@@ -124,7 +127,8 @@ class PhotoEditorGUI(QMainWindow):
                                                          "Contrast Level:", 0, -255, 255, 1)
         if ok_pressed:
             self.image_canvas.adjustContrast(contrast_level)
-
+    
+   
 # handling esacape key: and f1 key
     def keyPressEvent(self, event):
         """Handle key press events."""
