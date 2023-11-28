@@ -92,6 +92,9 @@ class PhotoEditorGUI(QMainWindow):
         self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
         self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
 
+        self.contrast_act = QAction(QIcon("./icons/contrast.png"),"Contrast",self)
+        self.contrast_act.triggered.connect(lambda: self.apply_contrast())
+
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
         tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, self.pixelation_act])
@@ -108,6 +111,12 @@ class PhotoEditorGUI(QMainWindow):
                                                      "Pixel Size:", 10, 1, 100, 1)
         if ok_pressed:
             self.image_canvas.pixelateImage(pixel_size)
+
+    def apply_contrast(self)
+        contrast_level, ok_pressed = QInputDialog.getInt(Self, "Adjust Contrast",
+                                                         "Contrast Level:", 0, -255, 255, 1)
+        if ok_pressed:
+            self.image_canvas.adjustContrast(contrast_level)
 
 # handling esacape key: and f1 key
     def keyPressEvent(self, event):
