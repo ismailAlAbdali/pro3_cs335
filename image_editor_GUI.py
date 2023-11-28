@@ -112,8 +112,8 @@ class PhotoEditorGUI(QMainWindow):
         if ok_pressed:
             self.image_canvas.pixelateImage(pixel_size)
 
-    def apply_contrast(self)
-        contrast_level, ok_pressed = QInputDialog.getInt(Self, "Adjust Contrast",
+    def apply_contrast(self):
+        contrast_level, ok_pressed = QInputDialog.getInt(self, "Adjust Contrast",
                                                          "Contrast Level:", 0, -255, 255, 1)
         if ok_pressed:
             self.image_canvas.adjustContrast(contrast_level)
