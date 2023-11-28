@@ -188,33 +188,6 @@ class EditorFunctions(QLabel):
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
-    def mousePressEvent(self, event):   
-        """Handle mouse press event."""
-        self.origin = event.pos()
-        if self.paintMode == 0:
-            if not(self.rubber_band):
-                self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
-            self.rubber_band.setGeometry(QRect(self.origin, QSize()))
-            self.rubber_band.show()
-        elif self.paintMode:
-            self.paintPixels(self.origin)
-
-
-
-        #print(self.rubber_band.height())
-        print(self.rubber_band.x())
-
-    def mouseMoveEvent(self, event):
-        """Handle mouse move event."""
-        self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
-        if self.paintMode:
-            self.paintPixels(event.pos())
-
-    def mouseReleaseEvent(self, event):
-        """Handle when the mouse is released."""
-        self.rubber_band.hide()
-        self.prevPaintLoc = None
-
     def paintPixels(self,origin,brush_size=3,color=QColor("black")):
         pixelsToPaint = set()
         #paint around origin in radius of brush_size around center
@@ -240,4 +213,29 @@ class EditorFunctions(QLabel):
 
     def togglePaintbrush(self):
         self.paintMode = not self.paintMode
-        self.prevPaintLoc
+        self.prevPaintLoc = None
+
+    def mousePressEvent(self, event):   
+        """Handle mouse press event."""
+        self.origin = event.pos()
+        if not self.paintMode:
+            if not(self.rubber_band):
+                self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
+            self.rubber_band.setGeometry(QRect(self.origin, QSize()))
+            self.rubber_band.show()
+        elif self.paintMode:
+            self.paintPixels(self.origin)
+
+        #print(self.rubber_band.height())
+        print(self.rubber_band.x())
+
+    def mouseMoveEvent(self, event):
+        """Handle mouse move event."""
+        self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
+        if self.paintMode:
+            self.paintPixels(event.pos())
+
+    def mouseReleaseEvent(self, event):
+        """Handle when the mouse is released."""
+        self.rubber_band.hide()
+        self.prevPaintLoc = None
