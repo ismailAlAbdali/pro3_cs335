@@ -4,6 +4,7 @@ import numpy as np
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
 from PyQt6.QtCore import Qt, QSize, QRect
 from PyQt6.QtGui import QPixmap, QImage, QTransform
+from statistics import median
 
 
 # from PyQt6.QtGui import QImage, QPainter, QImageBlurFilter, QPen # for blurring
@@ -168,6 +169,20 @@ class EditorFunctions(QLabel):
                                      Qt.AspectRatioMode.IgnoreAspectRatio,
                                      Qt.TransformationMode.FastTransformation)
             self.image = pixelated
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
+
+    #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
+    def adjustContrast(self,contrast_level):
+        if not self.image.isNull():
+            contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
+            for i in self.image.height:
+                for j in self.image.row:
+                    newColor = self.image.pixelColor(i,j)
+                    newColor.red = median([0,(contrastFactor*(newColor.red -128) + 128),255])
+                    newColor.blue = median([0,(contrastFactor*(newColor.blue -128) + 128),255])
+                    newColor.red = median([0,(contrastFactor*(newColor.green -128) + 128),255])
+                    self.image.setPixelColor(i,j,newColor)
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
