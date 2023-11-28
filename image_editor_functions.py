@@ -206,6 +206,7 @@ class EditorFunctions(QLabel):
         for x in range(brush_size):
             for y in range(brush_size):
                 pixelsToPaint.add(QPoint(origin.x() + x, origin.y() + y))
+        #when mouse is held, draw a line between each pair of points
         if self.prevPaintLoc != None and self.prevPaintLoc != origin:
             line_x = origin.x() - self.prevPaintLoc.x()
             line_y = origin.y() - self.prevPaintLoc.y()
