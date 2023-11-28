@@ -176,12 +176,12 @@ class EditorFunctions(QLabel):
     def adjustContrast(self,contrast_level):
         if not self.image.isNull():
             contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
-            for i in self.image.height:
-                for j in self.image.row:
+            for i in range(self.image.width()):
+                for j in range(self.image.height()):
                     newColor = self.image.pixelColor(i,j)
-                    newColor.red = median([0,(contrastFactor*(newColor.red -128) + 128),255])
-                    newColor.blue = median([0,(contrastFactor*(newColor.blue -128) + 128),255])
-                    newColor.red = median([0,(contrastFactor*(newColor.green -128) + 128),255])
+                    newColor.setRed(int(round(median([0,(contrastFactor*(newColor.red() -128) + 128),255]),0)))
+                    newColor.setBlue(int(round(median([0,(contrastFactor*(newColor.blue() -128) + 128),255]),0)))
+                    newColor.setGreen(int(round(median([0,(contrastFactor*(newColor.green() -128) + 128),255]),0)))
                     self.image.setPixelColor(i,j,newColor)
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
