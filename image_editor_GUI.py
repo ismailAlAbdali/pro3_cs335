@@ -97,7 +97,8 @@ class PhotoEditorGUI(QMainWindow):
 
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, self.pixelation_act])
+        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical, self.blur_act, self.convert_blackwhite_act, 
+                             self.pixelation_act, self.contrast_act])
 
 
     def applyBlur(self):
