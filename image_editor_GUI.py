@@ -103,6 +103,7 @@ class PhotoEditorGUI(QMainWindow):
 
         self.paintbrush_act = QAction(QIcon("./icons/brush.png"),"Toggle Paintbrush",self)
         self.paintbrush_act.triggered.connect(lambda: self.image_canvas.togglePaintbrush())
+        self.paintbrush_act.setCheckable(True)
 
         self.sketch_act = QAction(QIcon("./icons/sketch.png"), "Sketch", self)
         self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
