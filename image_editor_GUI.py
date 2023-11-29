@@ -36,6 +36,8 @@ class PhotoEditorGUI(QMainWindow):
         
         self.scroll_area.setWidget(self.image_canvas)
         self.setCentralWidget(self.scroll_area)
+        
+        self.scroll_area.setStyleSheet("background-color: #333333;")
 
     def createMenuBar(self):
         
@@ -58,11 +60,12 @@ class PhotoEditorGUI(QMainWindow):
         
         file_menu.addActions([self.open_act, self.save_act])
 
+        menu_bar.setStyleSheet("background-color: #ffffff;")
 
     def createToolBar(self):
-        """Set up the toolbar."""
+    
         tool_bar = QToolBar("Main Toolbar")
-        tool_bar.setIconSize(QSize(26, 26))
+        tool_bar.setIconSize(QSize(50, 50))
         self.addToolBar(tool_bar)
 
         # Revert action
@@ -71,17 +74,17 @@ class PhotoEditorGUI(QMainWindow):
         self.revert_act.setEnabled(True)
 
         # Transformation actions
-        self.rotate90_cw_act = QAction(QIcon("./icons/rotate90_cw.png"),'Rotate 90º CW', self)
-        self.rotate90_cw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("cw"))
+        self.rotate_right_act = QAction(QIcon("./icons/rotate_right.png"),'Rotate Right', self)
+        self.rotate_right_act.triggered.connect(lambda: self.image_canvas.rotateImage90("cw"))
 
-        self.rotate90_ccw_act = QAction(QIcon("./icons/rotate90_ccw.png"),'Rotate 90º CCW', self)
-        self.rotate90_ccw_act.triggered.connect(lambda: self.image_canvas.rotateImage90("ccw"))
+        self.rotate_left_act = QAction(QIcon("./icons/rotate_left.png"),'Rotate Left', self)
+        self.rotate_left_act.triggered.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
-        self.flip_vertical = QAction(QIcon("./icons/flip_vertical.png"), 'Flip Vertical', self)
-        self.flip_vertical.triggered.connect(lambda: self.image_canvas.mirrorImage('vertical'))
+        self.mirror_vertical = QAction(QIcon("./icons/mirror_x.png"), 'Mirror Vertical Axis', self)
+        self.mirror_vertical.triggered.connect(lambda: self.image_canvas.mirrorImage('horizontal'))
 
-        self.flip_horizontal = QAction(QIcon("./icons/flip_horizontal.png"), 'Flip Horizontal', self)
-        self.flip_horizontal.triggered.connect(lambda: self.image_canvas.mirrorImage('horizontal'))
+        self.mirror_horizontal = QAction(QIcon("./icons/mirror_y.png"), 'Mirror Horizontal Axis', self)
+        self.mirror_horizontal.triggered.connect(lambda: self.image_canvas.mirrorImage('vertical'))
 
 
         # Filter actions
@@ -89,10 +92,10 @@ class PhotoEditorGUI(QMainWindow):
         self.blur_act.triggered.connect(lambda: self.applyBlur())
         self.blur_act.setEnabled(True) # disable until finishing the funcationlity
         
-        self.convert_blackwhite_act = QAction(QIcon("./icons/grayscale.png"),"Black and White",self)
+        self.convert_blackwhite_act = QAction(QIcon("./icons/black_and_white.png"),"Black and White",self)
         self.convert_blackwhite_act.triggered.connect(lambda: self.image_canvas.blackAndWhite_trans())
 
-        self.pixelation_act = QAction(QIcon("./icons/pixel.png"),"Pixelate",self)
+        self.pixelation_act = QAction(QIcon("./icons/pixelate.png"),"Pixelate",self)
         self.pixelation_act.triggered.connect(lambda: self.apply_pixelation()) # pixel_size 2 default value
 
         self.contrast_act = QAction(QIcon("./icons/contrast.png"),"Contrast",self)
@@ -100,14 +103,22 @@ class PhotoEditorGUI(QMainWindow):
 
         self.paintbrush_act = QAction(QIcon("./icons/brush.png"),"Toggle Paintbrush",self)
         self.paintbrush_act.triggered.connect(lambda: self.image_canvas.togglePaintbrush())
+
+        self.sketch_act = QAction(QIcon("./icons/sketch.png"), "Sketch", self)
+        self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
+
+        
+        self.invert_act = QAction(QIcon("./icons/sketch.png"), "Sketch", self)
+        self.invert_act.triggered.connect(lambda: self.image_canvas.invertColors())
         
         tool_bar.addActions([self.open_act,self.save_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.rotate90_ccw_act, self.rotate90_cw_act, self.revert_act, self.flip_vertical,self.convert_blackwhite_act])
+        tool_bar.addActions([self.rotate_left_act, self.rotate_right_act, self.revert_act, self.mirror_horizontal,self.mirror_vertical,self.convert_blackwhite_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.blur_act,  self.pixelation_act, self.contrast_act])
+        tool_bar.addActions([self.blur_act,  self.pixelation_act, self.contrast_act, self.sketch_act])
         tool_bar.addSeparator()
         tool_bar.addActions([self.paintbrush_act])
+        tool_bar.setStyleSheet("background-color: #555555;")
 
 
     def applyBlur(self):
@@ -118,7 +129,7 @@ class PhotoEditorGUI(QMainWindow):
 
     def apply_pixelation(self):
         pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
-                                                     "Pixel Size:", 10, 1, 100, 1)
+                                                     "Pixel Size", 10, 1, 100, 1)
         if ok_pressed:
             self.image_canvas.pixelateImage(pixel_size)
 
