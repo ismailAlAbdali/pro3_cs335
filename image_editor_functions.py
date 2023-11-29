@@ -22,6 +22,7 @@ class EditorFunctions(QLabel):
         
         self.paintMode = False # if true, draw pen on image instead of rubber_band
         self.prevPaintLoc = None
+        self.paintColor = QColor("black")
         # Load image
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -187,7 +188,7 @@ class EditorFunctions(QLabel):
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
-    def paintPixels(self,origin,brush_size=3,color=QColor("black")):
+    def paintPixels(self,origin,brush_size=3):
         #store all pixels in set, then paint them to ensure no pixel is painted twice
         pixelsToPaint = set()
         #paint around origin in radius of brush_size
@@ -207,7 +208,7 @@ class EditorFunctions(QLabel):
                         pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
         imageClone = self.image.copy()
         for point in pixelsToPaint:
-            imageClone.setPixelColor(point,color)
+            imageClone.setPixelColor(point,self.paintColor)
         self.image = imageClone
         self.prevPaintLoc = origin
         self.setPixmap(QPixmap.fromImage(self.image))
