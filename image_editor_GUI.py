@@ -62,7 +62,8 @@ class PhotoEditorGUI(QMainWindow):
 
     
     def createToolBar(self):
-    
+        self.colors = []
+
         tool_bar = QToolBar("Tools")
         tool_bar.setIconSize(QSize(60, 60))
         self.addToolBar(tool_bar)   
@@ -204,6 +205,9 @@ class PhotoEditorGUI(QMainWindow):
         self.color_green_act.clicked.connect(lambda: self.set_color("green"))
         self.color_green_act.setCheckable(True)
 
+        # for fixing the coloring checking
+        self.colors.extend([self.color_black_act,self.color_white_act,self.color_red_act,self.color_blue_act,self.color_green_act])
+
         painting_layout.addWidget(self.paintbrush_act)
         painting_layout.addWidget(self.color_black_act)
         painting_layout.addWidget(self.color_white_act)
@@ -240,11 +244,14 @@ class PhotoEditorGUI(QMainWindow):
         if ok_pressed:
             self.image_canvas.adjustContrast(contrast_level)
     
+    # adding colors acts
+    
+
     def set_color(self,colorName):
         color = QColor(colorName)
         self.image_canvas.paintColor = color
         for coloract in self.colors:
-            if coloract.iconText().lower() != colorName:
+            if str.lower(coloract.toolTip()) != colorName:
                 coloract.setChecked(False)
    
 # handling esacape key: and f1 key
