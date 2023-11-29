@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar, QInputDialog, QScrollArea)
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QImage, QAction
+from PyQt6.QtGui import QIcon, QImage, QPalette, QAction, QColor
 import image_editor_functions as img
 
 ## the Whole UI
@@ -95,6 +95,30 @@ class PhotoEditorGUI(QMainWindow):
 
         self.paintbrush_act = QAction(QIcon("./icons/brush.png"),"Toggle Paintbrush",self)
         self.paintbrush_act.triggered.connect(lambda: self.image_canvas.togglePaintbrush())
+        self.paintbrush_act.setCheckable(True)
+
+        self.color_black_act = QAction(QIcon("./icons/color_black.png"), "Black", self)
+        self.color_black_act.triggered.connect(lambda: self.set_color("black"))
+        self.color_black_act.setCheckable(True)
+        self.color_black_act.setChecked(True)
+
+        self.color_white_act = QAction(QIcon("./icons/color_white.png"), "White", self)
+        self.color_white_act.triggered.connect(lambda: self.set_color("white"))
+        self.color_white_act.setCheckable(True)
+
+        self.color_red_act = QAction(QIcon("./icons/color_red.png"), "Red", self)
+        self.color_red_act.triggered.connect(lambda: self.set_color("red"))
+        self.color_red_act.setCheckable(True)
+
+        self.color_blue_act = QAction(QIcon("./icons/color_blue.png"), "Blue", self)
+        self.color_blue_act.triggered.connect(lambda: self.set_color("blue"))
+        self.color_blue_act.setCheckable(True)
+
+        self.color_green_act = QAction(QIcon("./icons/color_green.png"), "Green", self)
+        self.color_green_act.triggered.connect(lambda: self.set_color("green"))
+        self.color_green_act.setCheckable(True)
+
+        self.colors = [self.color_black_act, self.color_white_act, self.color_red_act, self.color_blue_act, self.color_green_act]
 
         self.sketch_act = QAction(QIcon("./icons/sketch.png"), "Sketch", self)
         self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
@@ -129,6 +153,12 @@ class PhotoEditorGUI(QMainWindow):
         if ok_pressed:
             self.image_canvas.adjustContrast(contrast_level)
     
+    def set_color(self,colorName):
+        color = QColor(colorName)
+        self.image_canvas.paintColor = color
+        for coloract in self.colors:
+            if coloract.iconText().lower() != colorName:
+                coloract.setChecked(False)
    
 # handling esacape key: and f1 key
     def keyPressEvent(self, event):
