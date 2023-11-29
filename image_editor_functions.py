@@ -186,7 +186,7 @@ class EditorFunctions(QLabel):
             self.repaint()
 
     def paintPixels(self,origin,brush_size=3,color=QColor("black")):
-        #store all pixels in set, then paint them to ensure no duplicates
+        #store all pixels in set, then paint them to ensure no pixel is painted twice
         pixelsToPaint = set()
         #paint around origin in radius of brush_size
         for x in range(brush_size):
