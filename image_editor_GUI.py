@@ -1,7 +1,7 @@
 import sys
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar, QInputDialog, QScrollArea)
 from PyQt6.QtCore import Qt, QSize
-from PyQt6.QtGui import QIcon, QImage, QPalette, QAction
+from PyQt6.QtGui import QIcon, QImage, QAction
 import image_editor_functions as img
 
 ## the Whole UI
@@ -18,9 +18,11 @@ class PhotoEditorGUI(QMainWindow):
         self.setMinimumSize(500, 500)
         self.setWindowTitle("Image Lab")
         self.showMaximized()
-
+        
+       
         self.createImageCanvas()
-        self.createMenuBar()
+        self.create_menu_bar()
+       
         self.createToolBar()
 
         self.show()
@@ -31,42 +33,32 @@ class PhotoEditorGUI(QMainWindow):
         self.image_canvas.resize(self.image_canvas.pixmap().size())
 
         self.scroll_area = QScrollArea()
-        self.scroll_area.setBackgroundRole(QPalette.ColorRole.Dark)
         self.scroll_area.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         self.scroll_area.setWidget(self.image_canvas)
         self.setCentralWidget(self.scroll_area)
         
-        self.scroll_area.setStyleSheet("background-color: #333333;")
+        self.scroll_area.setStyleSheet("background-color: #A1B5C1;")
 
-    def createMenuBar(self):
-        
-         # Create menubar
-        menu_bar = self.menuBar()
-        
-        # Actions for File menu
-        self.open_act = QAction(QIcon("./icons/open.png"),'Open...', self)
+    def create_menu_bar(self):
+
+        menu = self.menuBar()
+
+        self.open_act = QAction(QIcon("./icons/open.png"),'Open File', self)
         self.open_act.triggered.connect(self.image_canvas.openImage)
 
-        self.save_act = QAction(QIcon("./icons/save.png"), "Save...", self)
+        self.save_act = QAction(QIcon("./icons/save.png"), "Save File", self)
         self.save_act.triggered.connect(self.image_canvas.saveImage)
-        self.save_act.setEnabled(True)
 
-
-        # Create file menu and add actions
-        file_menu = menu_bar.addMenu('File')
-        file_menu.addAction(self.open_act)
-        file_menu.addAction(self.save_act)
-        
+        file_menu = menu.addMenu("File")
         file_menu.addActions([self.open_act, self.save_act])
 
-        menu_bar.setStyleSheet("background-color: #ffffff;")
-
+    
     def createToolBar(self):
     
         tool_bar = QToolBar("Main Toolbar")
         tool_bar.setIconSize(QSize(50, 50))
-        self.addToolBar(tool_bar)
+        self.addToolBar(tool_bar)   
 
         # Revert action
         self.revert_act = QAction(QIcon("./icons/revert.png"),"Revert to Original", self)
@@ -108,17 +100,15 @@ class PhotoEditorGUI(QMainWindow):
         self.sketch_act.triggered.connect(lambda: self.image_canvas.sketch_image())
 
         
-        self.invert_act = QAction(QIcon("./icons/sketch.png"), "Sketch", self)
+        self.invert_act = QAction(QIcon("./icons/invert.png"), "Invert", self)
         self.invert_act.triggered.connect(lambda: self.image_canvas.invertColors())
         
-        tool_bar.addActions([self.open_act,self.save_act])
-        tool_bar.addSeparator()
         tool_bar.addActions([self.rotate_left_act, self.rotate_right_act, self.revert_act, self.mirror_horizontal,self.mirror_vertical,self.convert_blackwhite_act])
         tool_bar.addSeparator()
-        tool_bar.addActions([self.blur_act,  self.pixelation_act, self.contrast_act, self.sketch_act])
+        tool_bar.addActions([self.blur_act, self.pixelation_act, self.contrast_act, self.sketch_act, self.invert_act])
         tool_bar.addSeparator()
         tool_bar.addActions([self.paintbrush_act])
-        tool_bar.setStyleSheet("background-color: #555555;")
+        tool_bar.setStyleSheet("background-color: #EEEDF0;")
 
 
     def applyBlur(self):
