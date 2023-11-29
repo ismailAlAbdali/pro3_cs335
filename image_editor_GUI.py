@@ -127,7 +127,7 @@ class PhotoEditorGUI(QMainWindow):
         self.pixelation_act.setIcon(QIcon("./icons/pixelate.png"))
         self.pixelation_act.setIconSize(QSize(30,30))
         self.pixelation_act.setToolTip("Pixelate")
-        self.pixelation_act.clicked.connect(lambda: self.image_canvas.pixelateImage())
+        self.pixelation_act.clicked.connect(lambda: self.apply_pixelation())
 
         self.contrast_act = QToolButton()
         self.contrast_act.setIcon(QIcon("./icons/contrast.png"))
