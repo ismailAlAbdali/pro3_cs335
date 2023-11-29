@@ -174,14 +174,16 @@ class EditorFunctions(QLabel):
     #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
     def adjustContrast(self,contrast_level):
         if not self.image.isNull():
+            contrasted = self.image.copy()
             contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
             for i in range(self.image.width()):
                 for j in range(self.image.height()):
-                    newColor = self.image.pixelColor(i,j)
+                    newColor = contrasted.pixelColor(i,j)
                     newColor.setRed(int(round(median([0,(contrastFactor*(newColor.red() -128) + 128),255]),0)))
                     newColor.setBlue(int(round(median([0,(contrastFactor*(newColor.blue() -128) + 128),255]),0)))
                     newColor.setGreen(int(round(median([0,(contrastFactor*(newColor.green() -128) + 128),255]),0)))
-                    self.image.setPixelColor(i,j,newColor)
+                    contrasted.setPixelColor(i,j,newColor)
+            self.image = contrasted
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
@@ -203,8 +205,10 @@ class EditorFunctions(QLabel):
                 for x in range(brush_size):
                     for y in range(brush_size):
                         pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
+        imageClone = self.image.copy()
         for point in pixelsToPaint:
-            self.image.setPixelColor(point,color)
+            imageClone.setPixelColor(point,color)
+        self.image = imageClone
         self.prevPaintLoc = origin
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
