@@ -7,7 +7,7 @@ from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 from statistics import median
 
 class EditorFunctions(QLabel):
-    """Subclass of QLabel for displaying image"""
+   
     def __init__(self, parent, image=None):
         super().__init__(parent)
         self.parent = parent 
@@ -209,6 +209,64 @@ class EditorFunctions(QLabel):
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
 
+    # inspired by algorithm at https://codewithcurious.com/python-projects/convert-image-into-sketch-python/
+    def sketch_image(self):
+        # Convert QImage to OpenCV format (BGR)
+        image = self.image.convertToFormat(QImage.Format.Format_RGB32)
+        # Convert QImage to OpenCV format
+        width = image.width()
+        height = image.height()
+        ptr = image.bits()
+        ptr.setsize(image.sizeInBytes())
+        arr = np.array(ptr).reshape((height, width, 4))
+
+        # Convert RGB to grayscale
+        gray_image = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+
+        #Invert the gray image
+        inverted_gray = cv2.bitwise_not(gray_image)
+
+        # Apply GaussianBlur to the grayscale image
+        blurred_image = cv2.GaussianBlur(inverted_gray, (21, 21), 0)
+
+        #Invert blurred image
+        inverted_blur = cv2.bitwise_not(blurred_image)
+
+        # Calculate the DodgeV2 operation
+        pencil_sketch = cv2.divide(gray_image, inverted_blur, scale=256.0)
+
+        # Convert OpenCV image back to QImage
+        height, width = pencil_sketch.shape[:2]
+        bytes_per_line = width
+        
+        sketched = QImage(pencil_sketch.data, width, height, bytes_per_line, QImage.Format.Format_Grayscale8)
+        self.image = sketched
+
+        self.setPixmap(QPixmap.fromImage(self.image))
+        self.repaint()
+
+    def invertColors(self):
+        if not self.image.isNull():
+            # Convert QImage to OpenCV format (BGR)
+            image = self.image.convertToFormat(QImage.Format.Format_RGB32)
+            # Convert QImage to OpenCV format
+            width = image.width()
+            height = image.height()
+            ptr = image.bits()
+            ptr.setsize(image.sizeInBytes())
+            arr = np.array(ptr).reshape((height, width, 4))
+
+            # Invert the colors
+            inverted_image = cv2.bitwise_not(arr)
+
+            # Convert back to QImage
+            bytes_per_line = width * 4
+            inverted_image_as_QImage = QImage(inverted_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB32)
+
+            self.image = inverted_image_as_QImage
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
+
     def togglePaintbrush(self):
         self.paintMode = not self.paintMode
         self.prevPaintLoc = None
@@ -224,7 +282,6 @@ class EditorFunctions(QLabel):
         elif self.paintMode:
             self.paintPixels(self.origin)
 
-        #print(self.rubber_band.height())
         print(self.rubber_band.x())
 
     def mouseMoveEvent(self, event):
