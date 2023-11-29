@@ -83,8 +83,8 @@ class PhotoEditorGUI(QMainWindow):
         self.rotate_left_act = QToolButton()
         self.rotate_left_act.setIcon(QIcon("./icons/rotate_left.png"))
         self.rotate_left_act.setIconSize(QSize(30,30))
-        self.rotate_left_act.setToolTip('Rotate Leftt')
-        self.rotate_left_act.clicked.connect(lambda: self.image_canvas.rotateImage90("cw"))
+        self.rotate_left_act.setToolTip('Rotate Left')
+        self.rotate_left_act.clicked.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
     
         self.mirror_vertical = QToolButton()
@@ -245,8 +245,6 @@ class PhotoEditorGUI(QMainWindow):
             self.image_canvas.adjustContrast(contrast_level)
     
     # adding colors acts
-    
-
     def set_color(self,colorName):
         color = QColor(colorName)
         self.image_canvas.paintColor = color

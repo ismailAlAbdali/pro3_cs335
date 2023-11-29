@@ -7,7 +7,7 @@ from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 from statistics import median
 
 class EditorFunctions(QLabel):
-    """Subclass of QLabel for displaying image"""
+   
     def __init__(self, parent, image=None):
         super().__init__(parent)
         self.parent = parent 
@@ -100,20 +100,20 @@ class EditorFunctions(QLabel):
             # No image to rotate
             pass
 
-    def flipImage(self, axis):
+    def mirrorImage(self, axis):
         
         if self.image.isNull() == False:
             if axis == "horizontal":
-                flip_h = QTransform().scale(-1, 1)
+                mirror_horizontal = QTransform().scale(-1, 1)
                 pixmap = QPixmap(self.image)
-                flipped = pixmap.transformed(flip_h)
+                mirrored = pixmap.transformed(mirror_horizontal)
             elif axis == "vertical":
-                flip_v = QTransform().scale(1, -1)
+                mirror_vertical = QTransform().scale(1, -1)
                 pixmap = QPixmap(self.image)
-                flipped = pixmap.transformed(flip_v)
+                mirrored = pixmap.transformed(mirror_vertical)
 
-            self.image = QImage(flipped)
-            self.setPixmap(flipped)
+            self.image = QImage(mirrored)
+            self.setPixmap(mirrored)
             
             self.repaint()
         else:
@@ -152,7 +152,7 @@ class EditorFunctions(QLabel):
     # grayscale image trasformation
     def blackAndWhite_trans(self):
         if self.image.isNull() == False:
-            temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale16)
+            temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale8)
             self.image = QImage(temp_converted_img)
             self.setPixmap(QPixmap().fromImage(temp_converted_img))
             self.repaint()
@@ -177,14 +177,17 @@ class EditorFunctions(QLabel):
     #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
     def adjustContrast(self,contrast_level):
         if not self.image.isNull():
+            contrasted = self.image.copy()
             contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
             for i in range(self.image.width()):
                 for j in range(self.image.height()):
-                    newColor = self.image.pixelColor(i,j)
+                    newColor = contrasted.pixelColor(i,j)
                     newColor.setRed(int(round(median([0,(contrastFactor*(newColor.red() -128) + 128),255]),0)))
                     newColor.setBlue(int(round(median([0,(contrastFactor*(newColor.blue() -128) + 128),255]),0)))
                     newColor.setGreen(int(round(median([0,(contrastFactor*(newColor.green() -128) + 128),255]),0)))
-                    self.image.setPixelColor(i,j,newColor)
+                    contrasted.setPixelColor(i,j,newColor)
+            
+            self.image = contrasted
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
 
@@ -207,11 +210,74 @@ class EditorFunctions(QLabel):
                 for x in range(brush_size):
                     for y in range(brush_size):
                         pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
+        imageClone = self.image.copy()
         for point in pixelsToPaint:
-            self.image.setPixelColor(point,color)
+            imageClone.setPixelColor(point,color)
+        
+        self.image = imageClone
         self.prevPaintLoc = origin
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
+
+    # inspired by algorithm at https://codewithcurious.com/python-projects/convert-image-into-sketch-python/
+    def sketch_image(self):
+        # Convert QImage to OpenCV format (BGR)
+        image = self.image.convertToFormat(QImage.Format.Format_RGB32)
+        # Convert QImage to OpenCV format
+        width = image.width()
+        height = image.height()
+        ptr = image.bits()
+        ptr.setsize(image.sizeInBytes())
+        arr = np.array(ptr).reshape((height, width, 4))
+
+        # Convert RGB to grayscale
+        gray_image = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+
+        #Invert the gray image
+        inverted_gray = cv2.bitwise_not(gray_image)
+
+        # Apply GaussianBlur to the grayscale image
+        blurred_image = cv2.GaussianBlur(inverted_gray, (21, 21), 0)
+
+        #Invert blurred image
+        inverted_blur = cv2.bitwise_not(blurred_image)
+
+        # Calculate the DodgeV2 operation
+        pencil_sketch = cv2.divide(gray_image, inverted_blur, scale=256.0)
+
+        # Convert OpenCV image back to QImage
+        height, width = pencil_sketch.shape[:2]
+        bytes_per_line = width
+
+        sketched = QImage(pencil_sketch.data, width, height, bytes_per_line, QImage.Format.Format_Grayscale8)
+
+        sketch_to_rgb = sketched.convertToFormat(QImage.Format.Format_RGB32)
+        self.image = sketch_to_rgb
+
+        self.setPixmap(QPixmap.fromImage(self.image))
+        self.repaint()
+
+    def invertColors(self):
+        if not self.image.isNull():
+            # Convert QImage to OpenCV format (BGR)
+            image = self.image.convertToFormat(QImage.Format.Format_RGB32)
+            # Convert QImage to OpenCV format
+            width = image.width()
+            height = image.height()
+            ptr = image.bits()
+            ptr.setsize(image.sizeInBytes())
+            arr = np.array(ptr).reshape((height, width, 4))
+
+            # Invert the colors
+            inverted_image = cv2.bitwise_not(arr)
+
+            # Convert back to QImage
+            bytes_per_line = width * 4
+            inverted_image_as_QImage = QImage(inverted_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB32)
+
+            self.image = inverted_image_as_QImage
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
 
     def togglePaintbrush(self):
         self.paintMode = not self.paintMode
