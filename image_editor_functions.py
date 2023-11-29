@@ -150,7 +150,7 @@ class EditorFunctions(QLabel):
     # grayscale image trasformation
     def blackAndWhite_trans(self):
         if self.image.isNull() == False:
-            temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale16)
+            temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale8)
             self.image = QImage(temp_converted_img)
             self.setPixmap(QPixmap().fromImage(temp_converted_img))
             self.repaint()
@@ -245,7 +245,9 @@ class EditorFunctions(QLabel):
         bytes_per_line = width
         
         sketched = QImage(pencil_sketch.data, width, height, bytes_per_line, QImage.Format.Format_Grayscale8)
-        self.image = sketched
+
+        sketch_to_rgb = sketched.convertToFormat(QImage.Format.Format_RGB32)
+        self.image = sketch_to_rgb
 
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
