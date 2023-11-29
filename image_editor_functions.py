@@ -203,8 +203,10 @@ class EditorFunctions(QLabel):
                 for x in range(brush_size):
                     for y in range(brush_size):
                         pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
+        imageClone = self.image.copy()
         for point in pixelsToPaint:
-            self.image.setPixelColor(point,color)
+            imageClone.setPixelColor(point,color)
+        self.image = imageClone
         self.prevPaintLoc = origin
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
