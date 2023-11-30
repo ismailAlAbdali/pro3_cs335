@@ -1,10 +1,9 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QToolBar,QVBoxLayout,QHBoxLayout, QLabel, QInputDialog, QScrollArea, QWidget, QToolButton)
+from PyQt6.QtWidgets import QApplication, QMainWindow, QToolBar,QHBoxLayout, QLabel, QInputDialog, QScrollArea, QWidget, QToolButton
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIcon, QImage, QAction, QColor
 import image_editor_functions as img
 
-## the Whole UI
 class PhotoEditorGUI(QMainWindow):
     
     def __init__(self):
@@ -50,14 +49,17 @@ class PhotoEditorGUI(QMainWindow):
         self.save_act = QAction(QIcon("./icons/save.png"), "Save File", self)
         self.save_act.triggered.connect(self.image_canvas.saveImage)
         # Revert action
-        self.revert_act = QAction(QIcon("./icons/revert.png"), "Undo", self)
+        self.revert_act = QAction(QIcon("./icons/revert.png"), "Revert", self)
         self.revert_act.triggered.connect(lambda: self.image_canvas.revertToOriginal())
         self.revert_act.setEnabled(True)
 
-        file_menu = menu.addMenu("File")
-        file_menu.addActions([self.open_act, self.save_act])
+        self.close_act = QAction(QIcon("./icons/close.png"), "Close", self)
+        self.close_act.triggered.connect(lambda: self.close())
 
-        undo_menu = menu.addMenu("Undo")
+        file_menu = menu.addMenu("File")
+        file_menu.addActions([self.open_act, self.save_act, self.close_act])
+
+        undo_menu = menu.addMenu("Edit")
         undo_menu.addAction(self.revert_act)
 
     
@@ -86,7 +88,6 @@ class PhotoEditorGUI(QMainWindow):
         self.rotate_left_act.setToolTip('Rotate Left')
         self.rotate_left_act.clicked.connect(lambda: self.image_canvas.rotateImage90("ccw"))
 
-    
         self.mirror_vertical = QToolButton()
         self.mirror_vertical.setIcon(QIcon("./icons/mirror_x.png"))
         self.mirror_vertical.setIconSize(QSize(30,30))
@@ -99,11 +100,11 @@ class PhotoEditorGUI(QMainWindow):
         self.mirror_horizontal.setToolTip('Mirror Horizontal Axis')
         self.mirror_horizontal.clicked.connect(lambda: self.image_canvas.mirrorImage('vertical'))
 
-        
         transformation_layout.addWidget(self.rotate_left_act)
         transformation_layout.addWidget(self.rotate_right_act)
         transformation_layout.addWidget(self.mirror_horizontal)
         transformation_layout.addWidget(self.mirror_vertical)
+
 
         # Filter actions
         filter_label = QLabel("Filters")
@@ -142,7 +143,6 @@ class PhotoEditorGUI(QMainWindow):
         self.sketch_act.setToolTip("Sketch")
         self.sketch_act.clicked.connect(lambda: self.image_canvas.sketch_image())
         
-
         self.invert_act = QToolButton()
         self.invert_act.setIcon(QIcon("./icons/invert.png"))
         self.invert_act.setIconSize(QSize(30,30))
@@ -161,6 +161,7 @@ class PhotoEditorGUI(QMainWindow):
         painting_label = QLabel("Painting")
         painting_layout = QHBoxLayout()
         painting_layout.addWidget(painting_label)
+
 
         self.paintbrush_act = QToolButton()
         self.paintbrush_act.setIcon(QIcon("./icons/brush.png"))
@@ -228,19 +229,19 @@ class PhotoEditorGUI(QMainWindow):
 
     def applyBlur(self):
         blur_strength, ok_pressed = QInputDialog.getInt(self, "Set Blur Strength", 
-                                                        "Strength:", 5, 1, 50, 1)
+                                                        "Strength (min: 1 max: 50):", 5, 1, 50, 1)
         if ok_pressed:
             self.image_canvas.blurImageOpenCV(blur_strength) 
 
     def apply_pixelation(self):
         pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
-                                                     "Pixel Size", 10, 1, 100, 1)
+                                                     "Pixel Size (min: 1 max: 100):", 10, 1, 100, 1)
         if ok_pressed:
             self.image_canvas.pixelateImage(pixel_size)
 
     def apply_contrast(self):
         contrast_level, ok_pressed = QInputDialog.getInt(self, "Adjust Contrast",
-                                                         "Contrast Level:", 0, -255, 255, 1)
+                                                         "Contrast Level (min: -255 max: 255):", 0, -255, 255, 1)
         if ok_pressed:
             self.image_canvas.adjustContrast(contrast_level)
     
@@ -251,12 +252,6 @@ class PhotoEditorGUI(QMainWindow):
         for coloract in self.colors:
             if str.lower(coloract.toolTip()) != colorName:
                 coloract.setChecked(False)
-   
-# handling esacape key: and f1 key
-    def keyPressEvent(self, event):
-        """Handle key press events."""
-        if event.key() == Qt.Key.Key_Escape:
-            self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

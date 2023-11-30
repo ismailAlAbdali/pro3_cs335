@@ -32,8 +32,7 @@ class EditorFunctions(QLabel):
     def openImage(self):
         
         image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", 
-                "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
-                GIF Files (*.gif)")
+                "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp)")
         
         if image_file:
             # Get image format
