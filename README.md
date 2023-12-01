@@ -28,7 +28,11 @@ pip install PyQt6
 ```
 Or you can install all dependencies in one command by doing:
 ```
-pip install -r requirements.txt
+pip install -r /path/to/requirements.txt
+```
+For example, installing in same directory where requirements.txt lies:
+```
+pip install -r ./requirements.txt
 ```
 
 ## Running the Program
