@@ -1,127 +1,162 @@
-import cv2 
-import numpy as np
-
 from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
 from PyQt6.QtCore import Qt, QSize, QRect, QPoint
 from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 from statistics import median
+import cv2 
+import numpy as np
 
+'''
+This class represents the various functionalities of the image editor
+Has three different categories of image editing features:
+    * Transformations
+    * Filters/Effects
+    * Painting
+'''
 class EditorFunctions(QLabel):
    
     def __init__(self, parent, image=None):
+        
         super().__init__(parent)
         self.parent = parent 
-        self.image = QImage()
+        self.image = QImage() # create image object to apply image processing techniques
 
-        self.original_image = self.image
+        self.initial_image = self.image # store the initial version of the image for reverting purposes
 
         self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, self)
 
         self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
         self.setScaledContents(True)
         
-        self.paintMode = False # if true, draw pen on image instead of rubber_band
-        self.prevPaintLoc = None
+        self.paint_mode = False # if true, draw pen on image instead of rubber_band
+        self.prev_paint_loc = None # store location of last pixel painted
 
-        self.paintColor = QColor("black") # setup paint color black as default
+        self.paint_color = QColor("black") # setup paint color black as default
 
-        # Load image
+        # Load image onto canvas as a pixmap
         self.setPixmap(QPixmap().fromImage(self.image))
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-    def openImage(self):
-        
+    '''
+    This method allows the user to open an image file onto the image canvas
+    Allows various file types in the dialog
+    '''
+    def open_image(self):
+        # dialog to open file
         image_file, _ = QFileDialog.getOpenFileName(self, "Open Image", 
                 "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp)")
         
+        # if an image file was selected
         if image_file:
             # Get image format
             self.image = QImage(image_file)
-            self.original_image = self.image.copy()
+            self.initial_image = self.image.copy() # copy the initial image for reverting purposes
 
+            # Set the image on the image canvas
             self.setPixmap(QPixmap().fromImage(self.image))
-          
             self.resize(self.pixmap().size())
 
+        # if no image was selected
         elif image_file == "":
-            # User selected Cancel
+            # ignore
             pass
+        # if an invalid file type or corrupted image
         else:
-            QMessageBox.information(self, "Error", 
-                "Unable to open image.", QMessageBox.StandardButton.Ok)
+            QMessageBox.information(self, "Error", "Cannot open image.", QMessageBox.StandardButton.Ok) # show message to the user
     
-    def saveImage(self):
-        
+    '''
+    This method allows the user to save the image they edited
+    By default saves as .png but can save as other file types
+    '''
+    def save_image(self):
+        # if there is an image on the canvas
         if self.image.isNull() == False:
             image_file, _ = QFileDialog.getSaveFileName(self, "Save Image", 
-                "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp);;\
-                    GIF Files (*.gif)")
+                "", "PNG Files (*.png);;JPG Files (*.jpeg *.jpg );;Bitmap Files (*.bmp)")
 
+            # if there is an image on the canvas and we have an image to save
             if image_file and self.image.isNull() == False:
-                self.image.save(image_file)
+                self.image.save(image_file) # save the image
+            # otherwise we cannot save
             else:
-                QMessageBox.information(self, "Error", 
-                    "Unable to save image.", QMessageBox.StandardButton.Ok)
+                QMessageBox.information(self, "Error", "Cannot save image.", QMessageBox.StandardButton.Ok)
+        # if there is no image on the canvas
         else:
-            QMessageBox.information(self, "Empty Image", 
-                    "There is no image to save.", QMessageBox.StandardButton.Ok)
+            QMessageBox.information(self, "Save Not Needed", "There is no image to save.", QMessageBox.StandardButton.Ok)
 
-    def revertToOriginal(self):
-        
+    '''
+    This method reverts the image on the canvas back to the original
+    Acts as an undo button; replaces image on canvas with the initial image
+    '''
+    def revert_original(self):
+        # if there is an image on the canvas
         if self.image.isNull() == False:
-            self.image = self.original_image
+            self.image = self.initial_image # replace image on canvas with original
+
             self.setPixmap(QPixmap().fromImage(self.image))
             self.repaint()
+        # there is no image to revert
         else:
-            # No image to revert
+            # ignore
             pass
 
-
-    def rotateImage90(self, direction):
-        
+    '''
+    This method rotates the image by 90 degrees to the left or right
+    Relative to the x-axis
+    '''
+    def rotate_image(self, direction):
+        # if there is an imagfe on the canvas
         if self.image.isNull() == False:
-            if direction == "cw":
-                transform90 = QTransform().rotate(90)
-            elif direction == "ccw":
-                transform90 = QTransform().rotate(-90)
+            if direction == "right": # rotate to the right
+                rotate = QTransform().rotate(90)
+            elif direction == "left": # rotate to the left
+                rotate = QTransform().rotate(-90)
 
             pixmap = QPixmap(self.image)
 
-
-            rotated = pixmap.transformed(transform90, mode=Qt.TransformationMode.SmoothTransformation)
+            rotated = pixmap.transformed(rotate, mode=Qt.TransformationMode.SmoothTransformation)
             self.resize(self.image.height(), self.image.width())
            
             self.image = QImage(rotated) 
         
-            self.setPixmap(rotated.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation))
-            self.repaint() # repaint the child widget
+            self.setPixmap(rotated.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)) # allows the image to fit in window after rotate
+            self.repaint()
+        # if there is no image on the canvas
         else:
-            # No image to rotate
+            # ignore
             pass
-
-    def mirrorImage(self, axis):
-        
+    
+    '''
+    This method mirrors or flips the image along a given axis
+    Can be flipped over the x-axis or y-axis
+    '''
+    def mirror_image(self, axis):
+        # if there is an image on the canvas
         if self.image.isNull() == False:
-            if axis == "horizontal":
+            if axis == "horizontal": # mirror the image over the x-axis
                 mirror_horizontal = QTransform().scale(-1, 1)
                 pixmap = QPixmap(self.image)
                 mirrored = pixmap.transformed(mirror_horizontal)
-            elif axis == "vertical":
+            elif axis == "vertical": # mirror the image over the y-axis
                 mirror_vertical = QTransform().scale(1, -1)
                 pixmap = QPixmap(self.image)
                 mirrored = pixmap.transformed(mirror_vertical)
 
             self.image = QImage(mirrored)
-            self.setPixmap(mirrored)
             
+            self.setPixmap(mirrored)
             self.repaint()
+        # if there is no image on the canvas
         else:
-            # No image to flip
+            # ignore
             pass
 
-    ## make image blurring
-
-    def blurImageOpenCV(self, blur_strength):
+    '''
+    This method applies blurring effect to the image
+    Strength is obtained from a dilog with a specified range
+    blur_strenth is of type (int)
+    '''
+    def blur_image(self, blur_strength):
+        # if there is an image on the canvas
         if not self.image.isNull():
             # Ensure the image is in a format that uses 4 bytes per pixel
             image_format = QImage.Format.Format_ARGB32
@@ -142,22 +177,37 @@ class EditorFunctions(QLabel):
             # Convert back to QImage
             blurred_image = QImage(blurred.data, blurred.shape[1], blurred.shape[0], image_format)
             self.image = blurred_image
+            
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
-
+        # if there is no image on the canvas
         else:
-            QMessageBox.information(self, "Error", "No image to blur.", QMessageBox.StandardButton.Ok)
+           # ignore
+           pass
 
-    # grayscale image trasformation
-    def blackAndWhite_trans(self):
+    '''
+    This method applies grayscale on an image to achieve black/white effect
+    '''
+    def black_white_image(self):
+        # if there is an image on the canvas
         if self.image.isNull() == False:
             temp_converted_img = self.image.convertToFormat(QImage.Format.Format_Grayscale8)
             self.image = QImage(temp_converted_img)
+            
             self.setPixmap(QPixmap().fromImage(temp_converted_img))
             self.repaint()
+        # if there is no image on the canvas
+        else:
+            # ignore
+            pass
 
-    # adding pixelation
-    def pixelateImage(self, pixel_size):
+    '''
+    This method pixelates an image to achieve a mosaic effect
+    Pixelation varies based on input from user in a dialog 
+    pixel_size is of type (int)
+    '''
+    def pixelate_image(self, pixel_size):
+        # if there is an image on the canvas and pixelation effect was desired
         if not self.image.isNull() and pixel_size > 0:
             original_size = self.image.size()
             # Scale down the image to create the pixelated effect
@@ -170,95 +220,131 @@ class EditorFunctions(QLabel):
                                      Qt.AspectRatioMode.IgnoreAspectRatio,
                                      Qt.TransformationMode.FastTransformation)
             self.image = pixelated
+            
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
+        # if there is no image on the canvas or no pixelation effect was desired
+        else:
+            # ignore
+            pass
 
+    '''
+    This method changes the contrast between colors in an image
+    Contrast varies based on input from user in dialog
+    contrast_level is of type (int)
+    '''
     #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
-    def adjustContrast(self,contrast_level):
+    def adjust_contrast_image(self, contrast_level):
+        # if there is an image on the canvas
         if not self.image.isNull():
             contrasted = self.image.copy()
-            contrastFactor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
+            contrast_factor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
             for i in range(self.image.width()):
                 for j in range(self.image.height()):
-                    newColor = contrasted.pixelColor(i,j)
-                    newColor.setRed(int(round(median([0,(contrastFactor*(newColor.red() -128) + 128),255]),0)))
-                    newColor.setBlue(int(round(median([0,(contrastFactor*(newColor.blue() -128) + 128),255]),0)))
-                    newColor.setGreen(int(round(median([0,(contrastFactor*(newColor.green() -128) + 128),255]),0)))
-                    contrasted.setPixelColor(i,j,newColor)
+                    new_color = contrasted.pixelColor(i,j) # get the original pixel colors
+                    new_color.setRed(int(round(median([0,(contrast_factor*(new_color.red() -128) + 128),255]),0)))
+                    new_color.setBlue(int(round(median([0,(contrast_factor*(new_color.blue() -128) + 128),255]),0)))
+                    new_color.setGreen(int(round(median([0,(contrast_factor*(new_color.green() -128) + 128),255]),0)))
+                    contrasted.setPixelColor(i,j,new_color) # set the new pixel colors
             
             self.image = contrasted
+            
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
+        # if there is no image
+        else:
+            # ignore
+            pass
 
-    def paintPixels(self,origin,brush_size=3):
-        #store all pixels in set, then paint them to ensure no duplicates
-        color = self.paintColor
-        pixelsToPaint = set()
-        #paint around origin in radius of brush_size
+    '''
+    This method allows painting to be applied to the image with a brush
+    Default brush size of 3
+    '''
+    def paint_pixels_image(self, origin, brush_size=3):
+        # store all pixels in set, then paint them to ensure no duplicates
+        color = self.paint_color
+        pixels_to_paint = set()
+        
+        # paint around origin in radius of brush_size
         for x in range(brush_size):
             for y in range(brush_size):
-                pixelsToPaint.add(QPoint(origin.x() + x, origin.y() + y))
+                pixels_to_paint.add(QPoint(origin.x() + x, origin.y() + y))
+        
         #when mouse is held, draw a line between a point and the previous point from last call to function
-        if self.prevPaintLoc != None and self.prevPaintLoc != origin:
-            line_x = origin.x() - self.prevPaintLoc.x()
-            line_y = origin.y() - self.prevPaintLoc.y()
+        if self.prev_paint_loc != None and self.prev_paint_loc != origin:
+            line_x = origin.x() - self.prev_paint_loc.x()
+            line_y = origin.y() - self.prev_paint_loc.y()
             distance = (line_x**2 + line_y**2) ** (1/2)
             step_x = line_x/distance
             step_y = line_y/distance
             for i in range(int(round(distance))):
                 for x in range(brush_size):
                     for y in range(brush_size):
-                        pixelsToPaint.add(QPoint(self.prevPaintLoc.x() + x + int(round((i*step_x))), self.prevPaintLoc.y() + y + int(round((i*step_y))) ))
-        imageClone = self.image.copy()
-        for point in pixelsToPaint:
-            imageClone.setPixelColor(point,color)
+                        pixels_to_paint.add(QPoint(self.prev_paint_loc.x() + x + int(round((i*step_x))), self.prev_paint_loc.y() + y + int(round((i*step_y))) ))
+       
+        image_clone = self.image.copy()
+        for point in pixels_to_paint:
+            image_clone.setPixelColor(point,color)
         
-        self.image = imageClone
-        self.prevPaintLoc = origin
+        self.image = image_clone
+        self.prev_paint_loc = origin
+        
         self.setPixmap(QPixmap.fromImage(self.image))
         self.repaint()
 
-    # inspired by algorithm at https://codewithcurious.com/python-projects/convert-image-into-sketch-python/
+    '''
+    This method applies a sketch/pencil drawing effect on the image
+    '''
     def sketch_image(self):
-        # Convert QImage to OpenCV format (BGR)
-        image = self.image.convertToFormat(QImage.Format.Format_RGB32)
-        # Convert QImage to OpenCV format
-        width = image.width()
-        height = image.height()
-        ptr = image.bits()
-        ptr.setsize(image.sizeInBytes())
-        arr = np.array(ptr).reshape((height, width, 4))
-
-        # Convert RGB to grayscale
-        gray_image = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
-
-        #Invert the gray image
-        inverted_gray = cv2.bitwise_not(gray_image)
-
-        # Apply GaussianBlur to the grayscale image
-        blurred_image = cv2.GaussianBlur(inverted_gray, (21, 21), 0)
-
-        #Invert blurred image
-        inverted_blur = cv2.bitwise_not(blurred_image)
-
-        # Calculate the DodgeV2 operation
-        pencil_sketch = cv2.divide(gray_image, inverted_blur, scale=256.0)
-
-        # Convert OpenCV image back to QImage
-        height, width = pencil_sketch.shape[:2]
-        bytes_per_line = width
-
-        sketched = QImage(pencil_sketch.data, width, height, bytes_per_line, QImage.Format.Format_Grayscale8)
-
-        sketch_to_rgb = sketched.convertToFormat(QImage.Format.Format_RGB32)
-        self.image = sketch_to_rgb
-
-        self.setPixmap(QPixmap.fromImage(self.image))
-        self.repaint()
-
-    def invertColors(self):
+        # if there is an image on the canvas
         if not self.image.isNull():
-            # Convert QImage to OpenCV format (BGR)
+            # Convert QImage to format (BGR)
+            image = self.image.convertToFormat(QImage.Format.Format_RGB32)
+            # Convert QImage to OpenCV format
+            width = image.width()
+            height = image.height()
+            ptr = image.bits()
+            ptr.setsize(image.sizeInBytes())
+            arr = np.array(ptr).reshape((height, width, 4))
+
+            # Convert RGB to grayscale
+            gray_image = cv2.cvtColor(arr, cv2.COLOR_RGB2GRAY)
+
+            #Invert the gray image
+            inverted_gray = cv2.bitwise_not(gray_image)
+
+            # Apply GaussianBlur to the grayscale image
+            blurred_image = cv2.GaussianBlur(inverted_gray, (21, 21), 0)
+
+            #Invert blurred image
+            inverted_blur = cv2.bitwise_not(blurred_image)
+
+            # Calculate the DodgeV2 operation
+            pencil_sketch = cv2.divide(gray_image, inverted_blur, scale=256.0)
+
+            # Convert OpenCV image back to QImage
+            height, width = pencil_sketch.shape[:2]
+            bytes_per_line = width
+
+            sketched = QImage(pencil_sketch.data, width, height, bytes_per_line, QImage.Format.Format_Grayscale8)
+
+            sketch_to_rgb = sketched.convertToFormat(QImage.Format.Format_RGB32)
+            self.image = sketch_to_rgb
+
+            self.setPixmap(QPixmap.fromImage(self.image))
+            self.repaint()
+        # if there is no image on the canvas
+        else:
+            # ignore
+            pass
+
+    '''
+    This method inverts the colors of the image to achieve a "negative" effect
+    '''
+    def invert_colors_image(self):
+        # if there is an image on the canvas
+        if not self.image.isNull():
+            # Convert QImage to format (BGR)
             image = self.image.convertToFormat(QImage.Format.Format_RGB32)
             # Convert QImage to OpenCV format
             width = image.width()
@@ -277,31 +363,41 @@ class EditorFunctions(QLabel):
             self.image = inverted_image_as_QImage
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
+        else:
+            # ignore
+            pass
 
+    '''
+    This method allows the paintbrush to be toggled on or off to allow drawing
+    '''
     def togglePaintbrush(self):
-        self.paintMode = not self.paintMode
-        self.prevPaintLoc = None
+        self.paint_mode = not self.paint_mode
+        self.prev_paint_loc = None
 
-
+    '''
+    This method handles pressing the mouse when drawing on the image
+    '''
     def mousePressEvent(self, event):   
-        """Handle mouse press event."""
         self.origin = event.pos()
-        if not self.paintMode:
+        if not self.paint_mode:
             if not(self.rubber_band):
                 self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
             self.rubber_band.setGeometry(QRect(self.origin, QSize()))
             self.rubber_band.show()
-        elif self.paintMode:
-            self.paintPixels(self.origin)
+        elif self.paint_mode:
+            self.paint_pixels_image(self.origin)
 
-
+    '''
+    This method handles moving the mouse across the image when drawing
+    '''
     def mouseMoveEvent(self, event):
-        """Handle mouse move event."""
         self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
-        if self.paintMode:
-            self.paintPixels(event.pos())
+        if self.paint_mode:
+            self.paint_pixels_image(event.pos())
 
+    '''
+    This method handles when the mouse is released
+    '''
     def mouseReleaseEvent(self, event):
-        """Handle when the mouse is released."""
         self.rubber_band.hide()
-        self.prevPaintLoc = None
+        self.prev_paint_loc = None
