@@ -1,5 +1,5 @@
-from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog, QSizePolicy, QRubberBand
-from PyQt6.QtCore import Qt, QSize, QRect, QPoint
+from PyQt6.QtWidgets import QLabel, QMessageBox, QFileDialog
+from PyQt6.QtCore import Qt, QPoint
 from PyQt6.QtGui import QPixmap, QImage, QTransform, QColor
 from statistics import median
 import cv2 
@@ -21,11 +21,6 @@ class EditorFunctions(QLabel):
         self.image = QImage() # create image object to apply image processing techniques
 
         self.initial_image = self.image # store the initial version of the image for reverting purposes
-
-        self.rubber_band = QRubberBand(QRubberBand.Shape.Rectangle, self)
-
-        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
-        self.setScaledContents(True)
         
         self.paint_mode = False # if true, draw pen on image instead of rubber_band
         self.prev_paint_loc = None # store location of last pixel painted
@@ -103,6 +98,7 @@ class EditorFunctions(QLabel):
     This method rotates the image by 90 degrees to the left or right
     Relative to the x-axis
     '''
+    # concept drawn from reference: https://doc.qt.io/qt-6/qtransform.html
     def rotate_image(self, direction):
         # if there is an imagfe on the canvas
         if self.image.isNull() == False:
@@ -129,6 +125,7 @@ class EditorFunctions(QLabel):
     This method mirrors or flips the image along a given axis
     Can be flipped over the x-axis or y-axis
     '''
+    # code drawn from reference: https://stackoverflow.com/questions/28409248/how-to-flip-a-qimage
     def mirror_image(self, axis):
         # if there is an image on the canvas
         if self.image.isNull() == False:
@@ -155,6 +152,7 @@ class EditorFunctions(QLabel):
     Strength is obtained from a dilog with a specified range
     blur_strenth is of type (int)
     '''
+    # conceptualization drawn from reference: https://datacarpentry.org/image-processing/06-blurring.html#gaussian-blur
     def blur_image(self, blur_strength):
         # if there is an image on the canvas
         if not self.image.isNull():
@@ -206,6 +204,7 @@ class EditorFunctions(QLabel):
     Pixelation varies based on input from user in a dialog 
     pixel_size is of type (int)
     '''
+    # reference for conceptualization: https://stackoverflow.com/questions/47143332/how-to-pixelate-a-square-image-to-256-big-pixels-with-python
     def pixelate_image(self, pixel_size):
         # if there is an image on the canvas and pixelation effect was desired
         if not self.image.isNull() and pixel_size > 0:
@@ -233,7 +232,7 @@ class EditorFunctions(QLabel):
     Contrast varies based on input from user in dialog
     contrast_level is of type (int)
     '''
-    #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
+    # uses algorithm from reference: https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
     def adjust_contrast_image(self, contrast_level):
         # if there is an image on the canvas
         if not self.image.isNull():
@@ -295,6 +294,8 @@ class EditorFunctions(QLabel):
     '''
     This method applies a sketch/pencil drawing effect on the image
     '''
+
+    # reference algorithm: https://www.askpython.com/python/examples/images-to-pencil-sketch
     def sketch_image(self):
         # if there is an image on the canvas
         if not self.image.isNull():
@@ -379,25 +380,28 @@ class EditorFunctions(QLabel):
     '''
     def mousePressEvent(self, event):   
         self.origin = event.pos()
-        if not self.paint_mode:
-            if not(self.rubber_band):
-                self.rubber_band = QRubberBand(QRubberBand.Rectangle, self)
-            self.rubber_band.setGeometry(QRect(self.origin, QSize()))
-            self.rubber_band.show()
-        elif self.paint_mode:
+        # if paint brush is toggled on
+        if self.paint_mode:
             self.paint_pixels_image(self.origin)
+        # if paint brush is toggled off
+        else:
+            # ignore
+            pass
 
     '''
     This method handles moving the mouse across the image when drawing
     '''
     def mouseMoveEvent(self, event):
-        self.rubber_band.setGeometry(QRect(self.origin, event.pos()).normalized())
+        # if paintbrush is toggled on
         if self.paint_mode:
             self.paint_pixels_image(event.pos())
+        # if paintbrush is toggled off
+        else: 
+            #ignore
+            pass
 
     '''
     This method handles when the mouse is released
     '''
     def mouseReleaseEvent(self, event):
-        self.rubber_band.hide()
-        self.prev_paint_loc = None
+        self.prev_paint_loc = None # reset the location of last drawn point
