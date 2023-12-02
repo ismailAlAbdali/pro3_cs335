@@ -277,6 +277,9 @@ class PhotoEditorGUI(QMainWindow):
     Allows the strength to be set in a integer range between 1 and 50
     '''
     def apply_blur_effect(self):
+        if self.image_canvas.image.isNull():
+            self.image_canvas.errorMessage("no image to blur")
+            return
         blur_strength, ok_pressed = QInputDialog.getInt(self, "Set Blur Strength", 
                                                         "Strength (min: 1 max: 50):", 5, 1, 50, 1)
         if ok_pressed:
@@ -287,6 +290,9 @@ class PhotoEditorGUI(QMainWindow):
     Allows the pixel size to be set in a integer range between 1 and 100
     '''
     def apply_pixelation_effect(self):
+        if self.image_canvas.image.isNull():
+            self.image_canvas.errorMessage("no image to pixelate")
+            return
         pixel_size, ok_pressed = QInputDialog.getInt(self, "Pixelate Image",
                                                      "Pixel Size (min: 1 max: 100):", 10, 1, 100, 1)
         if ok_pressed:
@@ -297,6 +303,10 @@ class PhotoEditorGUI(QMainWindow):
     Allows the contrast level to be set in a integer range between -255 and 255
     '''
     def apply_contrast_effect(self):
+        if self.image_canvas.image.isNull():
+            self.image_canvas.errorMessage("no image to contrast")
+            return
+
         contrast_level, ok_pressed = QInputDialog.getInt(self, "Adjust Contrast",
                                                          "Contrast Level (min: -255 max: 255):", 0, -255, 255, 1)
         if ok_pressed:
