@@ -61,7 +61,7 @@ class EditorFunctions(QLabel):
             pass
         # if an invalid file type or corrupted image
         else:
-            QMessageBox.information(self, "Error", "Cannot open image.", QMessageBox.StandardButton.Ok) # show message to the user
+            self.errorMessage("Cannot open image.")
     
     '''
     This method allows the user to save the image they edited
@@ -78,10 +78,10 @@ class EditorFunctions(QLabel):
                 self.image.save(image_file) # save the image
             # otherwise we cannot save
             else:
-                QMessageBox.information(self, "Error", "Cannot save image.", QMessageBox.StandardButton.Ok)
+                self.errorMessage("Cannot save image.")
         # if there is no image on the canvas
         else:
-            QMessageBox.information(self, "Save Not Needed", "There is no image to save.", QMessageBox.StandardButton.Ok)
+            self.errorMessage("There is no image to save.",error="Save Not Needed")
 
     '''
     This method reverts the image on the canvas back to the original
@@ -96,8 +96,7 @@ class EditorFunctions(QLabel):
             self.repaint()
         # there is no image to revert
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to revert")
 
     '''
     This method rotates the image by 90 degrees to the left or right
@@ -122,8 +121,7 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to rotate")
     
     '''
     This method mirrors or flips the image along a given axis
@@ -147,8 +145,7 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to Mirror")
 
     '''
     This method applies blurring effect to the image
@@ -157,7 +154,7 @@ class EditorFunctions(QLabel):
     '''
     def blur_image(self, blur_strength):
         # if there is an image on the canvas
-        if not self.image.isNull():
+        if self.image.isNull() == False:
             # Ensure the image is in a format that uses 4 bytes per pixel
             image_format = QImage.Format.Format_ARGB32
             converted_image = self.image.convertToFormat(image_format)
@@ -182,7 +179,6 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas
         else:
-           # ignore
            pass
 
     '''
@@ -198,8 +194,7 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to convert to grayscale")
 
     '''
     This method pixelates an image to achieve a mosaic effect
@@ -208,7 +203,7 @@ class EditorFunctions(QLabel):
     '''
     def pixelate_image(self, pixel_size):
         # if there is an image on the canvas and pixelation effect was desired
-        if not self.image.isNull() and pixel_size > 0:
+        if self.image.isNull() == False and pixel_size > 0:
             original_size = self.image.size()
             # Scale down the image to create the pixelated effect
             small = self.image.scaled(original_size.width() // pixel_size,
@@ -225,7 +220,6 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas or no pixelation effect was desired
         else:
-            # ignore
             pass
 
     '''
@@ -236,7 +230,7 @@ class EditorFunctions(QLabel):
     #uses algorithm from https://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
     def adjust_contrast_image(self, contrast_level):
         # if there is an image on the canvas
-        if not self.image.isNull():
+        if self.image.isNull() == False:
             contrasted = self.image.copy()
             contrast_factor = (259*(contrast_level + 255))/(255*(259 - contrast_level))
             for i in range(self.image.width()):
@@ -253,7 +247,6 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image
         else:
-            # ignore
             pass
 
     '''
@@ -297,7 +290,7 @@ class EditorFunctions(QLabel):
     '''
     def sketch_image(self):
         # if there is an image on the canvas
-        if not self.image.isNull():
+        if self.image.isNull() == False:
             # Convert QImage to format (BGR)
             image = self.image.convertToFormat(QImage.Format.Format_RGB32)
             # Convert QImage to OpenCV format
@@ -335,15 +328,14 @@ class EditorFunctions(QLabel):
             self.repaint()
         # if there is no image on the canvas
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to Sketch")
 
     '''
     This method inverts the colors of the image to achieve a "negative" effect
     '''
     def invert_colors_image(self):
         # if there is an image on the canvas
-        if not self.image.isNull():
+        if self.image.isNull() == False:
             # Convert QImage to format (BGR)
             image = self.image.convertToFormat(QImage.Format.Format_RGB32)
             # Convert QImage to OpenCV format
@@ -364,8 +356,7 @@ class EditorFunctions(QLabel):
             self.setPixmap(QPixmap.fromImage(self.image))
             self.repaint()
         else:
-            # ignore
-            pass
+            self.errorMessage("no image to invert")
 
     '''
     This method allows the paintbrush to be toggled on or off to allow drawing
@@ -375,7 +366,8 @@ class EditorFunctions(QLabel):
         self.prev_paint_loc = None
 
     '''
-    This method handles pressing the mouse when drawing on the image
+    This method handles pressing the mouse when drawing on the image and handles make RubberBank when moving the mouse.
+    - Another feature we where trying to add is cropping. we initily started making the rubber band
     '''
     def mousePressEvent(self, event):   
         self.origin = event.pos()
@@ -401,3 +393,5 @@ class EditorFunctions(QLabel):
     def mouseReleaseEvent(self, event):
         self.rubber_band.hide()
         self.prev_paint_loc = None
+    def errorMessage(self,message,error = "Error"):
+        QMessageBox.information(self, error, message, QMessageBox.StandardButton.Ok)
